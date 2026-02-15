@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epidemium — Learning Epidemic Modeling</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Lato:wght@300;400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #ffffff;
+            color: #1C2442;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #1C2442;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #2F4474;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .topics-heading {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 24px;
+        }
+
+        .topic-card {
+            display: block;
+            padding: 28px 24px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+
+        .topic-card:hover {
+            border-color: #1E9CC5;
+            box-shadow: 0 4px 16px rgba(30, 156, 197, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .topic-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1C2442;
+            margin-bottom: 8px;
+        }
+
+        .topic-card p {
+            font-size: 0.9rem;
+            color: #2F4474;
+            line-height: 1.6;
+        }
+
+        .topic-card .tag {
+            display: inline-block;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .tag-active {
+            background-color: #DFF8ED;
+            color: #1E9CC5;
+        }
+
+        .tag-soon {
+            background-color: #f0f0f0;
+            color: #999;
+        }
+
+        .topic-card.coming-soon {
+            border-color: #f0f0f0;
+            opacity: 0.55;
+            cursor: default;
+        }
+
+        .topic-card.coming-soon:hover {
+            border-color: #f0f0f0;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .topic-card.coming-soon h3 {
+            color: #999;
+        }
+
+        .topic-card.coming-soon p {
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Epidemium</h1>
+            <p>Interactive lessons on epidemic modeling and forecasting. Explore concepts through hands-on visualizations built with real data.</p>
+        </div>
+
+        <p class="topics-heading">Topics</p>
+        <div class="topic-grid">
+            <a class="topic-card" href="forecasting-evaluation.html">
+                <span class="tag tag-active">Available</span>
+                <h3>Forecasting Evaluation</h3>
+                <p>How do you measure whether an epidemic forecast is any good? Explore prediction intervals, the Weighted Interval Score, and model comparison with a real baseline.</p>
+            </a>
+
+            <div class="topic-card coming-soon">
+                <span class="tag tag-soon">Coming Soon</span>
+                <h3>Epidemic Models</h3>
+                <p>From SIR to agent-based simulations, learn how mathematical models capture the dynamics of disease transmission.</p>
+            </div>
+
+            <div class="topic-card coming-soon">
+                <span class="tag tag-soon">Coming Soon</span>
+                <h3>Outbreak Detection</h3>
+                <p>How do we know when an outbreak is starting? Explore surveillance systems and statistical methods for early detection.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

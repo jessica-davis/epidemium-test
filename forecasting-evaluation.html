@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forecasting Evaluation — Epidemium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Lato:wght@300;400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #ffffff;
+            color: #1C2442;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 20px;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .chart-section {
+            width: 100%;
+        }
+
+        .description-section {
+            padding: 20px;
+            background-color: #F2F2F2;
+            border-radius: 8px;
+        }
+
+        .description-section h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #344D84;
+            margin-bottom: 12px;
+        }
+
+        .description-section p {
+            margin-bottom: 12px;
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        .description-section .definition {
+            font-style: italic;
+            color: #2F4474;
+            margin-bottom: 25px;
+            padding-left: 15px;
+            border-left: 3px solid #1E9CC5;
+        }
+
+        .description-section .example {
+            background-color: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        .description-section .example strong {
+            color: #344D84;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1C2442;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #2F4474;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background-color: #DFF8ED;
+            border-left: 4px solid #1E9CC5;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+            color: #1E9CC5;
+        }
+
+        .error {
+            background-color: #fee;
+            border-left: 4px solid #c00;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #c00;
+        }
+
+        .chart-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            background-color: #F2F2F2;
+            border-radius: 6px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls label {
+            font-weight: 600;
+            color: #1C2442;
+            margin-right: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #344D84;
+            background-color: white;
+            color: #344D84;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background-color: #344D84;
+            color: white;
+        }
+
+        .toggle-btn:hover {
+            background-color: #1E9CC5;
+            border-color: #1E9CC5;
+            color: white;
+        }
+
+        #chart {
+            width: 100%;
+        }
+
+        .axis-label {
+            font-size: 14px;
+            font-weight: 600;
+            fill: #1C2442;
+            font-family: 'Patrick Hand', cursive;
+        }
+
+        .tick-label {
+            font-family: 'Patrick Hand', cursive;
+            font-size: 12px;
+            fill: #1C2442;
+        }
+
+        .legend-text {
+            font-family: 'Patrick Hand', cursive;
+            font-size: 13px;
+            fill: #1C2442;
+        }
+
+        .chart-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1C2442;
+            margin-bottom: 10px;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 2px dashed #ccc;
+            margin: 40px 0;
+        }
+
+        .section-heading {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1C2442;
+            margin-bottom: 5px;
+        }
+
+        .section-sub {
+            font-size: 0.95rem;
+            color: #2F4474;
+            margin-bottom: 20px;
+        }
+
+        .wis-slider {
+            -webkit-appearance: none;
+            width: 180px;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+
+        .wis-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #344D84;
+            cursor: pointer;
+        }
+
+        .width-label {
+            font-family: 'Patrick Hand', cursive;
+            font-size: 0.9rem;
+            color: #344D84;
+        }
+
+        .wis-component {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 0.85rem;
+        }
+
+        .wis-component .swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .wis-scores {
+            margin-top: 15px;
+        }
+
+        .wis-score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .wis-score-row:last-child {
+            border-bottom: none;
+        }
+
+        .wis-score-label {
+            font-size: 0.85rem;
+            color: #1C2442;
+        }
+
+        .wis-score-value {
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .rwis-highlight {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .rwis-label {
+            font-size: 0.85rem;
+            color: #2F4474;
+        }
+
+        .rwis-value {
+            font-family: 'Patrick Hand', cursive;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .rwis-good { color: #27ae60; }
+        .rwis-bad { color: #c0392b; }
+
+        .rwis-interp {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        #wis-decomp {
+            margin-top: 12px;
+        }
+
+        /* --- Tab navigation (left sidebar) --- */
+        .tab-layout {
+            display: flex;
+            gap: 0;
+        }
+
+        .tab-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border-right: 2px solid #e0e0e0;
+            flex-shrink: 0;
+            padding-top: 4px;
+            transition: width 0.2s, padding 0.2s, opacity 0.2s;
+            overflow: hidden;
+        }
+
+        .tab-bar.collapsed {
+            width: 0;
+            padding: 0;
+            border-right: none;
+        }
+
+        .tab-bar.collapsed .tab-btn {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2F4474;
+            background: none;
+            border: none;
+            border-right: 3px solid transparent;
+            margin-right: -2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #1E9CC5;
+        }
+
+        .tab-btn.active {
+            color: #1C2442;
+            border-right-color: #1E9CC5;
+            background: #f8f8f8;
+        }
+
+        .tab-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #2F4474;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .tab-toggle:hover {
+            border-color: #1E9CC5;
+            color: #1E9CC5;
+        }
+
+        .tab-toggle .arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+
+        .tab-toggle.closed .arrow {
+            transform: rotate(180deg);
+        }
+
+        .tab-panel {
+            flex: 1;
+            min-width: 0;
+            padding-left: 24px;
+        }
+
+        .tab-bar.collapsed + .tab-panel {
+            padding-left: 0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- Boxplot section --- */
+        .boxplot-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .boxplot-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            background-color: #F2F2F2;
+            border-radius: 6px;
+        }
+
+        .coverage-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 0.95rem;
+            margin: 4px 0;
+        }
+
+        .coverage-check {
+            font-size: 1.1rem;
+        }
+
+        .coverage-hit { color: #27ae60; }
+        .coverage-miss { color: #c0392b; }
+
+        .drag-hint {
+            font-size: 0.8rem;
+            color: #999;
+            font-style: italic;
+            margin-top: 6px;
+        }
+
+        /* --- Collapsible math section --- */
+        .math-details {
+            margin: 30px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .math-details summary {
+            padding: 14px 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #344D84;
+            cursor: pointer;
+            background: #F2F2F2;
+            list-style: none;
+        }
+
+        .math-details summary::-webkit-details-marker { display: none; }
+
+        .math-details summary::before {
+            content: '+ ';
+            font-weight: 700;
+        }
+
+        .math-details[open] summary::before {
+            content: '- ';
+        }
+
+        .math-body {
+            padding: 20px 24px;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .math-eq {
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.1rem;
+            background: #f8f8f8;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 12px 0;
+            border-left: 3px solid #1E9CC5;
+            overflow-x: auto;
+        }
+
+        .math-label {
+            font-weight: 600;
+            color: #344D84;
+            margin-top: 16px;
+            display: block;
+        }
+
+        .back-link {
+            display: inline-block;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1E9CC5;
+            text-decoration: none;
+            margin-bottom: 16px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* --- WIS section dividers --- */
+        .wis-section-divider {
+            border: none;
+            border-top: 1px dashed #ddd;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Epidemium</a>
+        <h1>Epidemic Forecasting Evaluation</h1>
+        <p class="subtitle">Understanding Prediction Intervals, Coverage, and Forecast Accuracy</p>
+
+        <div id="loading" class="loading">Loading data...</div>
+        <div id="error" class="error" style="display:none;"></div>
+
+        <div id="main-app" style="display:none;">
+          <div class="tab-layout">
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="tab-pi">Prediction Intervals</button>
+                <button class="tab-btn" data-tab="tab-wis">Weighted Interval Score</button>
+            </div>
+
+            <div class="tab-panel">
+            <button class="tab-toggle" id="tab-toggle">
+                <span class="arrow">&#9664;</span> <span class="label">Topics</span>
+            </button>
+            <!-- PI Tab -->
+            <div id="tab-pi" class="tab-content active">
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Weekly Incident Flu Hospitalizations - US National</h3>
+                            <div class="controls">
+                                <div class="control-group">
+                                    <label>Prediction Intervals:</label>
+                                    <button class="toggle-btn active" data-interval="95">95%</button>
+                                    <button class="toggle-btn active" data-interval="80">80%</button>
+                                    <button class="toggle-btn active" data-interval="50">50%</button>
+                                </div>
+                            </div>
+                            <div id="chart"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>What are Prediction Intervals?</h3>
+                        <p class="definition">
+                            Prediction intervals quantify uncertainty in forecasts. They provide a range where we expect future observations to fall with a specified probability.
+                        </p>
+                        <div class="example">
+                            <strong>Example: What does an 80% Prediction Interval mean?</strong>
+                            <p>If we generate 100 forecasts with 80% prediction intervals, we expect approximately 80 of the observed values to fall within their respective intervals. The remaining 20 observations would fall outside.</p>
+                            <p style="margin-top: 15px;">In other words, an 80% PI tells us: "We are 80% confident that the true future value will fall somewhere between the lower and upper bounds of this interval."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WIS Tab -->
+            <div id="tab-wis" class="tab-content">
+
+                <!-- Section 1: Evaluating Quantile Forecasts -->
+                <h2 class="section-heading" style="margin-bottom:5px;">Evaluating Quantile Forecasts</h2>
+                <p class="section-sub">How do we measure whether a probabilistic forecast is any good?</p>
+
+                <div class="content-wrapper" style="margin-bottom:10px;">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Forecast as Prediction Intervals</h3>
+                            <div class="controls">
+                                <div class="control-group">
+                                    <label>Show PIs:</label>
+                                    <button class="toggle-btn active" data-wis-box-interval="95">95%</button>
+                                    <button class="toggle-btn active" data-wis-box-interval="80">80%</button>
+                                    <button class="toggle-btn active" data-wis-box-interval="50">50%</button>
+                                </div>
+                            </div>
+                            <div id="wis-box-chart"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>Sharpness vs. Calibration</h3>
+                        <p>Quantile forecasts express uncertainty as prediction intervals. But how do we judge their quality? Two key properties:</p>
+                        <p><strong>Sharpness</strong> — Are the intervals narrow? A forecast that says "between 0 and 100,000" is uninformative. Narrower intervals are more useful.</p>
+                        <p><strong>Calibration</strong> — Do the observed values actually land inside the intervals at the right rate? An 80% PI should contain the observation about 80% of the time.</p>
+                        <p class="definition" style="margin-top:15px;">The ideal forecast is as sharp as possible while remaining well-calibrated. We need a scoring rule that rewards both properties.</p>
+                    </div>
+                </div>
+
+                <hr class="wis-section-divider">
+
+                <!-- Section 2: The WIS Score -->
+                <h2 class="section-heading" style="margin-bottom:5px;">The Weighted Interval Score</h2>
+                <p class="section-sub">Explore how interval width and observed values affect the score.</p>
+
+                <div class="content-wrapper" style="margin-bottom:10px;">
+                    <div class="chart-section">
+                        <div class="boxplot-container">
+                            <h3 class="chart-title">Explore: Single Forecast Date</h3>
+                            <div class="boxplot-controls">
+                                <div class="control-group">
+                                    <label>Show PIs:</label>
+                                    <button class="toggle-btn active" data-bp-interval="95">95%</button>
+                                    <button class="toggle-btn active" data-bp-interval="80">80%</button>
+                                    <button class="toggle-btn active" data-bp-interval="50">50%</button>
+                                </div>
+                                <div class="control-group">
+                                    <label>Width:</label>
+                                    <span class="width-label">Sharp</span>
+                                    <input type="range" class="wis-slider" id="bp-width-slider" min="0.3" max="3.0" step="0.05" value="1.0">
+                                    <span class="width-label">Wide</span>
+                                    <span class="width-label" id="bp-width-value" style="font-weight:700;">1.0x</span>
+                                </div>
+                            </div>
+                            <div id="boxplot"></div>
+                            <p class="drag-hint">Drag the observed value (dark dot) left or right to see how the score changes.</p>
+                            <div id="bp-coverage"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>What is WIS?</h3>
+                        <p class="definition">
+                            WIS measures forecast quality by balancing <strong>sharpness</strong> (narrow intervals) with <strong>calibration</strong> (observations landing inside). Lower is better.
+                        </p>
+                        <p>WIS decomposes into three penalties:</p>
+                        <div class="wis-component">
+                            <span class="swatch" style="background:#5ACDC5;"></span>
+                            <span><strong>Dispersion</strong> — how wide the intervals are</span>
+                        </div>
+                        <div class="wis-component">
+                            <span class="swatch" style="background:#E87D5F;"></span>
+                            <span><strong>Underprediction</strong> — observed &gt; upper bound</span>
+                        </div>
+                        <div class="wis-component">
+                            <span class="swatch" style="background:#8B6DB0;"></span>
+                            <span><strong>Overprediction</strong> — observed &lt; lower bound</span>
+                        </div>
+
+                        <div id="wis-decomp" style="margin-top:12px;"></div>
+
+                        <div class="wis-scores">
+                            <div class="wis-score-row">
+                                <span class="wis-score-label">WIS (this date)</span>
+                                <span class="wis-score-value" id="wis-model-val">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Collapsible math details -->
+                <details class="math-details">
+                    <summary>The Math Behind WIS</summary>
+                    <div class="math-body">
+                        <p>WIS is built from the <strong>Interval Score (IS)</strong>, which scores a single prediction interval against an observed value.</p>
+
+                        <span class="math-label">Interval Score for a (1-&alpha;) prediction interval:</span>
+                        <div class="math-eq">
+                            IS<sub>&alpha;</sub>(l, u, y) = (u - l) + (2/&alpha;)(l - y) &middot; 1[y &lt; l] + (2/&alpha;)(y - u) &middot; 1[y &gt; u]
+                        </div>
+
+                        <p>The three terms correspond to the three WIS components:</p>
+                        <p><strong style="color:#5ACDC5;">(u - l)</strong> = <strong>Dispersion</strong> — penalizes wide intervals. Wider intervals always increase this term.</p>
+                        <p><strong style="color:#E87D5F;">(2/&alpha;)(y - u)</strong> = <strong>Underprediction</strong> — penalizes when the observed value y falls above the upper bound u. The penalty scales with 2/&alpha;, so missing a 95% PI (&alpha;=0.05) costs 40x, while missing a 50% PI (&alpha;=0.50) only costs 4x.</p>
+                        <p><strong style="color:#8B6DB0;">(2/&alpha;)(l - y)</strong> = <strong>Overprediction</strong> — penalizes when y falls below the lower bound l.</p>
+
+                        <span class="math-label">Weighted Interval Score:</span>
+                        <div class="math-eq">
+                            WIS = 1/(K + 0.5) &middot; [ 0.5 &middot; |y - m| + &sum;<sub>k=1</sub><sup>K</sup> (&alpha;<sub>k</sub>/2) &middot; IS<sub>&alpha;k</sub> ]
+                        </div>
+
+                        <p>where <em>m</em> is the predicted median, <em>K</em> is the number of interval pairs, and the sum runs over all symmetric quantile pairs. The 0.5 &middot; |y - m| term is the median absolute error, giving additional weight to point accuracy.</p>
+                    </div>
+                </details>
+
+                <hr class="wis-section-divider">
+
+                <!-- Section 4: Relative WIS -->
+                <h2 class="section-heading" style="margin-bottom:5px;">Relative WIS &mdash; Comparing to a Baseline</h2>
+                <p class="section-sub">A score only has meaning in comparison. How does the model stack up against a simple baseline?</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Model vs. Baseline Forecast</h3>
+                            <div id="rwis-chart"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>The FluSight Baseline</h3>
+                        <p>The <strong>FluSight baseline</strong> is a simple persistence model: it predicts the most recent observed value forward, using historical first differences to generate a prediction distribution.</p>
+                        <p style="margin-top:10px;">A raw WIS number is hard to interpret on its own. Is 500 good? Bad? It depends on the difficulty of the prediction task. <strong>Relative WIS</strong> solves this by comparing to a baseline:</p>
+                        <div class="math-eq" style="text-align:center; font-size:1.3rem;">
+                            rWIS = WIS<sub>model</sub> / WIS<sub>baseline</sub>
+                        </div>
+                        <p><strong>rWIS &lt; 1</strong> means the model outperforms the baseline.<br>
+                        <strong>rWIS &gt; 1</strong> means the baseline is better.</p>
+
+                    </div>
+                </div>
+            </div>
+            </div><!-- .tab-panel -->
+          </div><!-- .tab-layout -->
+        </div>
+    </div>
+
+    <script>
+        const FORECAST_URL = 'forecast.csv';
+        const SURVEILLANCE_URL = 'target.csv';
+        const BASELINE_URL = 'forecast_baseline.csv';
+
+        const COLORS = {
+            observed: '#1C2442',
+            forecast: '#1E9CC5',
+            pi95: '#DFF8ED',
+            pi80: '#5ACDC5',
+            pi50: '#344D84',
+            baseline: '#E87D5F'
+        };
+
+        let chartData = null;
+
+        async function loadData() {
+            try {
+                const [forecastRaw, surveillanceRaw, baselineRaw] = await Promise.all([
+                    d3.csv(FORECAST_URL),
+                    d3.csv(SURVEILLANCE_URL),
+                    d3.csv(BASELINE_URL)
+                ]);
+
+                console.log('Forecast rows:', forecastRaw.length);
+                console.log('Surveillance rows:', surveillanceRaw.length);
+
+                // Process forecast data - already filtered to US
+                const forecastByDate = d3.group(forecastRaw, d => d.target_end_date);
+
+                const forecastData = Array.from(forecastByDate, ([date, rows]) => {
+                    const q = {};
+                    rows.forEach(r => {
+                        if (r.output_type === 'quantile') {
+                            q[r.output_type_id] = +r.value;
+                        }
+                    });
+                    return {
+                        date: new Date(date),
+                        q025: q['0.025'],
+                        q100: q['0.1'],
+                        q250: q['0.25'],
+                        q500: q['0.5'],
+                        q750: q['0.75'],
+                        q900: q['0.9'],
+                        q975: q['0.975'],
+                        allQ: q
+                    };
+                }).sort((a, b) => a.date - b.date);
+
+                // Process surveillance data - already filtered to US, take latest values per date
+                const byDate = d3.rollup(
+                    surveillanceRaw,
+                    v => d3.max(v, d => +d.observation || 0),
+                    d => d.target_end_date
+                );
+
+                const surveillanceData = Array.from(byDate, ([date, value]) => ({
+                    date: new Date(date),
+                    value: value
+                })).sort((a, b) => a.date - b.date);
+
+                console.log('Forecast data points:', forecastData.length);
+                console.log('Surveillance data points:', surveillanceData.length);
+                console.log('First forecast:', forecastData[0]);
+                console.log('First surveillance:', surveillanceData[0]);
+
+                // Process baseline data — US quantile rows only, same structure as forecast
+                const baselineUS = baselineRaw.filter(r => r.location === 'US' && r.output_type === 'quantile' && r.horizon !== '-1');
+                const baselineByDate = d3.group(baselineUS, d => d.target_end_date);
+                const baselineData = Array.from(baselineByDate, ([date, rows]) => {
+                    const q = {};
+                    rows.forEach(r => { q[r.output_type_id] = +r.value; });
+                    return {
+                        date: new Date(date),
+                        q025: q['0.025'], q100: q['0.1'], q250: q['0.25'],
+                        q500: q['0.5'], q750: q['0.75'], q900: q['0.9'], q975: q['0.975'],
+                        allQ: q
+                    };
+                }).sort((a, b) => a.date - b.date);
+
+                chartData = { forecast: forecastData, surveillance: surveillanceData, baseline: baselineData };
+
+                // Show container BEFORE drawing so clientWidth is available
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+
+                drawChart([95, 80, 50]);
+                setupControls();
+                setupTabs();
+                bpObservedValue = SYNTH_DATA[2].observed;
+                setupBoxplotControls();
+                setupWISBoxControls();
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function drawChart(enabledIntervals) {
+            const { forecast, surveillance } = chartData;
+
+            d3.select('#chart').selectAll('*').remove();
+
+            const margin = {top: 20, right: 30, bottom: 50, left: 70};
+            const container = document.getElementById('chart');
+            const width = container.clientWidth - margin.left - margin.right;
+            const height = 380 - margin.top - margin.bottom;
+
+            const svgEl = d3.select('#chart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom);
+
+            const svg = svgEl.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Create rough.js wrapper
+            const rc = rough.svg(svgEl.node());
+
+            // Scales
+            const allDates = [...surveillance.map(d => d.date), ...forecast.map(d => d.date)];
+            const allValues = [
+                ...surveillance.map(d => d.value),
+                ...forecast.flatMap(d => [d.q025, d.q975])
+            ];
+
+            const xScale = d3.scaleTime()
+                .domain(d3.extent(allDates))
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(allValues) * 1.1])
+                .range([height, 0]);
+
+            // Sketchy axes
+            const xTicks = xScale.ticks(6);
+            const yTicks = yScale.ticks(6);
+
+            // Sketchy x-axis line
+            svg.node().appendChild(rc.line(0, height, width, height, {
+                stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 1
+            }));
+
+            // Sketchy x tick marks and labels
+            xTicks.forEach((tick, i) => {
+                const x = xScale(tick);
+                svg.node().appendChild(rc.line(x, height, x, height + 6, {
+                    stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i
+                }));
+                svg.append('text')
+                    .attr('class', 'tick-label')
+                    .attr('x', x).attr('y', height + 20)
+                    .attr('text-anchor', 'middle')
+                    .text(d3.timeFormat('%b %d')(tick));
+            });
+
+            // Sketchy y-axis line
+            svg.node().appendChild(rc.line(0, 0, 0, height, {
+                stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 2
+            }));
+
+            // Sketchy y tick marks and labels
+            yTicks.forEach((tick, i) => {
+                const y = yScale(tick);
+                svg.node().appendChild(rc.line(-6, y, 0, y, {
+                    stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 20 + i
+                }));
+                svg.append('text')
+                    .attr('class', 'tick-label')
+                    .attr('x', -10).attr('y', y + 4)
+                    .attr('text-anchor', 'end')
+                    .text(d3.format(',')(tick));
+            });
+
+            // Axis labels
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -55)
+                .attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .text('Weekly Hospitalizations');
+
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('x', width / 2)
+                .attr('y', height + 42)
+                .attr('text-anchor', 'middle')
+                .text('Week');
+
+            // Define PIs
+            const pis = [
+                {level: 95, lower: 'q025', upper: 'q975', color: COLORS.pi95, opacity: 0.3},
+                {level: 80, lower: 'q100', upper: 'q900', color: COLORS.pi80, opacity: 0.4},
+                {level: 50, lower: 'q250', upper: 'q750', color: COLORS.pi50, opacity: 0.5}
+            ];
+
+            // Draw PI areas (sketchy)
+            pis.forEach(pi => {
+                if (enabledIntervals.includes(pi.level)) {
+                    const area = d3.area()
+                        .x(d => xScale(d.date))
+                        .y0(d => yScale(d[pi.lower]))
+                        .y1(d => yScale(d[pi.upper]));
+
+                    const pathD = area(forecast);
+                    const sketchyPath = rc.path(pathD, {
+                        fill: pi.color,
+                        fillStyle: 'solid',
+                        fillWeight: 1,
+                        stroke: 'none',
+                        roughness: 1.5,
+                        seed: pi.level
+                    });
+                    sketchyPath.style.opacity = pi.opacity;
+                    svg.node().appendChild(sketchyPath);
+                }
+            });
+
+            // Draw PI bound lines (sketchy)
+            pis.forEach(pi => {
+                if (enabledIntervals.includes(pi.level)) {
+                    const lowerLine = d3.line()
+                        .x(d => xScale(d.date))
+                        .y(d => yScale(d[pi.lower]));
+                    const upperLine = d3.line()
+                        .x(d => xScale(d.date))
+                        .y(d => yScale(d[pi.upper]));
+
+                    const sketchyLower = rc.path(lowerLine(forecast), {
+                        stroke: pi.color,
+                        strokeWidth: 1.5,
+                        roughness: 1.2,
+                        fill: 'none',
+                        seed: pi.level + 1
+                    });
+                    svg.node().appendChild(sketchyLower);
+
+                    const sketchyUpper = rc.path(upperLine(forecast), {
+                        stroke: pi.color,
+                        strokeWidth: 1.5,
+                        roughness: 1.2,
+                        fill: 'none',
+                        seed: pi.level + 2
+                    });
+                    svg.node().appendChild(sketchyUpper);
+                }
+            });
+
+            // Draw median forecast line (sketchy)
+            const medianLine = d3.line()
+                .x(d => xScale(d.date))
+                .y(d => yScale(d.q500));
+
+            const sketchyMedian = rc.path(medianLine(forecast), {
+                stroke: COLORS.forecast,
+                strokeWidth: 2.5,
+                roughness: 1.2,
+                fill: 'none',
+                seed: 42
+            });
+            svg.node().appendChild(sketchyMedian);
+
+            // Draw observed dots (sketchy circles)
+            surveillance.forEach(d => {
+                const sketchyDot = rc.circle(xScale(d.date), yScale(d.value), 10, {
+                    fill: COLORS.observed,
+                    fillStyle: 'solid',
+                    stroke: COLORS.observed,
+                    strokeWidth: 1,
+                    roughness: 1,
+                    seed: Math.round(d.value)
+                });
+                svg.node().appendChild(sketchyDot);
+            });
+
+            // Legend
+            const legend = svg.append('g')
+                .attr('transform', `translate(${width - 150}, 20)`);
+
+            const legendDot = rc.circle(15, 0, 8, {
+                fill: COLORS.observed,
+                fillStyle: 'solid',
+                stroke: COLORS.observed,
+                roughness: 1,
+                seed: 99
+            });
+            legend.node().appendChild(legendDot);
+            legend.append('text')
+                .attr('class', 'legend-text')
+                .attr('x', 25).attr('y', 4)
+                .text('Observed');
+
+            const legendLine = rc.line(0, 20, 30, 20, {
+                stroke: COLORS.forecast,
+                strokeWidth: 2.5,
+                roughness: 1.2,
+                seed: 100
+            });
+            legend.node().appendChild(legendLine);
+            legend.append('text')
+                .attr('class', 'legend-text')
+                .attr('x', 35).attr('y', 24)
+                .text('Forecast');
+        }
+
+        function setupControls() {
+            document.querySelectorAll('.toggle-btn[data-interval]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    const enabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-interval]'))
+                        .map(b => parseInt(b.dataset.interval));
+                    drawChart(enabled);
+                });
+            });
+        }
+
+        // --- Tab switching ---
+        function setupTabs() {
+            document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                    // Redraw WIS charts when switching to WIS tab (ensures correct widths)
+                    if (btn.dataset.tab === 'tab-wis') {
+                        const enabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-wis-box-interval]'))
+                            .map(b => parseInt(b.dataset.wisBoxInterval));
+                        drawBoxChart(enabled);
+                        redrawBoxplot();
+                        drawRWISChart();
+                    }
+                    if (btn.dataset.tab === 'tab-pi') {
+                        const piEnabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-interval]'))
+                            .map(b => parseInt(b.dataset.interval));
+                        drawChart(piEnabled);
+                    }
+                });
+            });
+
+            // Sidebar toggle
+            const toggle = document.getElementById('tab-toggle');
+            const bar = document.querySelector('.tab-bar');
+            toggle.addEventListener('click', () => {
+                bar.classList.toggle('collapsed');
+                toggle.classList.toggle('closed');
+                const label = toggle.querySelector('.label');
+                if (bar.classList.contains('collapsed')) {
+                    label.textContent = 'Topics';
+                } else {
+                    label.textContent = 'Topics';
+                }
+                // Redraw current tab's charts after layout shift
+                setTimeout(() => {
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    if (activeTab) {
+                        if (activeTab.dataset.tab === 'tab-pi') {
+                            const piEnabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-interval]'))
+                                .map(b => parseInt(b.dataset.interval));
+                            drawChart(piEnabled);
+                        } else if (activeTab.dataset.tab === 'tab-wis') {
+                            const enabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-wis-box-interval]'))
+                                .map(b => parseInt(b.dataset.wisBoxInterval));
+                            drawBoxChart(enabled);
+                            redrawBoxplot();
+                            drawRWISChart();
+                        }
+                    }
+                }, 250);
+            });
+        }
+
+        // --- Boxplot Section ---
+        // Uses SYNTH_DATA[2] (Nov 22) as the single forecast date
+        let bpObservedValue = null; // set after SYNTH_DATA is defined
+
+        function getBPEnabledPIs() {
+            return Array.from(document.querySelectorAll('.toggle-btn.active[data-bp-interval]'))
+                .map(b => parseInt(b.dataset.bpInterval));
+        }
+
+        function getBPWidth() {
+            return parseFloat(document.getElementById('bp-width-slider').value);
+        }
+
+        function redrawBoxplot() {
+            drawBoxplot(bpObservedValue, getBPWidth(), getBPEnabledPIs());
+        }
+
+        function renderObservedDot(svg, rc, xScale, obsVal, centerY, allQ, enabledPIs) {
+            // Remove previous observed elements only
+            svg.selectAll('.obs-group').remove();
+
+            // Insert before the drag overlay so overlay stays on top for pointer events
+            const obsG = svg.select('.drag-overlay').empty()
+                ? svg.append('g').attr('class', 'obs-group')
+                : svg.insert('g', '.drag-overlay').attr('class', 'obs-group');
+
+            const obsX = xScale(obsVal);
+
+            // Vertical dashed line
+            obsG.node().appendChild(rc.line(obsX, centerY - 45, obsX, centerY + 45, {
+                stroke: COLORS.observed, strokeWidth: 1, roughness: 0.6,
+                strokeLineDash: [4, 4], seed: 461
+            }));
+
+            // Dot
+            obsG.node().appendChild(rc.circle(obsX, centerY, 14, {
+                fill: COLORS.observed, fillStyle: 'solid',
+                stroke: '#fff', strokeWidth: 2,
+                roughness: 1, seed: 460
+            }));
+
+            // Label
+            obsG.append('text').attr('class', 'tick-label')
+                .attr('x', obsX).attr('y', centerY - 50)
+                .attr('text-anchor', 'middle')
+                .style('font-weight', '700').style('font-size', '13px')
+                .text('Observed: ' + d3.format(',')(Math.round(obsVal)));
+
+            // Update coverage + WIS readouts (only use pairs for enabled PIs)
+            updateBPCoverage(allQ, obsVal, enabledPIs);
+            const activePairs = enabledPIs.flatMap(level => PI_TO_PAIRS[level] || []);
+            const wis = computeWIS(allQ, obsVal, activePairs.length > 0 ? activePairs : WIS_PAIRS);
+            document.getElementById('wis-model-val').textContent = Math.round(wis.total).toLocaleString();
+            drawWISDecomp(wis);
+        }
+
+        function drawBoxplot(obsVal, widthFactor, enabledPIs) {
+            const d = SYNTH_DATA[2]; // fixed: Nov 22 forecast
+            const sigma = d.observed * 0.12 * widthFactor;
+            const allQ = generateQuantiles(d.modelMedian, sigma);
+
+            d3.select('#boxplot').selectAll('*').remove();
+
+            const container = document.getElementById('boxplot');
+            const margin = {top: 30, right: 30, bottom: 40, left: 20};
+            const W = container.clientWidth - margin.left - margin.right;
+            const H = 130;
+
+            const svgEl = d3.select('#boxplot')
+                .append('svg')
+                .attr('width', W + margin.left + margin.right)
+                .attr('height', H + margin.top + margin.bottom);
+
+            const svg = svgEl.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const rc = rough.svg(svgEl.node());
+
+            // X scale: hospitalizations (fixed domain so axis doesn't jump)
+            const maxQ = d.modelMedian + 1.96 * d.observed * 0.12 * 3.0;
+            const minQ = Math.max(0, d.modelMedian - 1.96 * d.observed * 0.12 * 3.0);
+            const xScale = d3.scaleLinear()
+                .domain([minQ * 0.8, maxQ * 1.1])
+                .range([0, W]);
+
+            // Axis
+            svg.node().appendChild(rc.line(0, H, W, H, {
+                stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 300
+            }));
+
+            xScale.ticks(8).forEach((tick, i) => {
+                const x = xScale(tick);
+                svg.node().appendChild(rc.line(x, H, x, H + 6, {
+                    stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 310 + i
+                }));
+                svg.append('text').attr('class', 'tick-label')
+                    .attr('x', x).attr('y', H + 20)
+                    .attr('text-anchor', 'middle')
+                    .text(d3.format(',')(tick));
+            });
+
+            svg.append('text').attr('class', 'axis-label')
+                .attr('x', W / 2).attr('y', H + 38)
+                .attr('text-anchor', 'middle')
+                .text('Weekly Hospitalizations');
+
+            // PI definitions for boxplot (horizontal bars)
+            const piDefs = [
+                { level: 95, lower: '0.025', upper: '0.975', color: COLORS.pi95, barH: 60 },
+                { level: 80, lower: '0.1',   upper: '0.9',   color: COLORS.pi80, barH: 40 },
+                { level: 50, lower: '0.25',  upper: '0.75',  color: COLORS.pi50, barH: 22 },
+            ];
+
+            const centerY = H / 2;
+
+            // Draw PI bars (widest first)
+            piDefs.forEach((pi, i) => {
+                if (!enabledPIs.includes(pi.level)) return;
+                const x1 = xScale(allQ[pi.lower]);
+                const x2 = xScale(allQ[pi.upper]);
+                const y = centerY - pi.barH / 2;
+                svg.node().appendChild(rc.rectangle(x1, y, x2 - x1, pi.barH, {
+                    fill: pi.color, fillStyle: 'solid',
+                    stroke: pi.color, strokeWidth: 1.5,
+                    roughness: 1.2, seed: 400 + i
+                }));
+                // Label above bar
+                svg.append('text').attr('class', 'legend-text')
+                    .attr('x', (x1 + x2) / 2).attr('y', centerY - pi.barH / 2 - 4)
+                    .attr('text-anchor', 'middle')
+                    .style('font-size', '11px')
+                    .text(pi.level + '% PI');
+            });
+
+            // Median line
+            const medX = xScale(allQ['0.5']);
+            svg.node().appendChild(rc.line(medX, centerY - 35, medX, centerY + 35, {
+                stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 0.8, seed: 450
+            }));
+
+            // Annotation: dynamic feedback based on width slider
+            let annotation = '';
+            if (widthFactor < 0.5) annotation = 'Too sharp! Observations fall outside — large penalty';
+            else if (widthFactor < 0.8) annotation = 'Sharper intervals, but some coverage misses';
+            else if (widthFactor <= 1.3) annotation = 'Good balance of sharpness and calibration';
+            else if (widthFactor <= 2.0) annotation = 'Wide intervals — high dispersion penalty';
+            else annotation = 'Very wide — safe coverage but poor sharpness';
+
+            svg.append('text').attr('class', 'tick-label')
+                .attr('x', W / 2).attr('y', -8)
+                .attr('text-anchor', 'middle')
+                .style('fill', '#666').style('font-size', '13px')
+                .text(annotation);
+
+            // Draw observed dot (will be redrawn on drag)
+            renderObservedDot(svg, rc, xScale, obsVal, centerY, allQ, enabledPIs);
+
+            // Full-width drag overlay — stays on top, never destroyed during drag
+            svg.append('rect')
+                .attr('class', 'drag-overlay')
+                .attr('x', 0).attr('y', 0)
+                .attr('width', W).attr('height', H)
+                .attr('fill', 'transparent')
+                .style('cursor', 'ew-resize')
+                .call(d3.drag()
+                    .on('drag', function(event) {
+                        const newVal = xScale.invert(Math.max(0, Math.min(W, event.x)));
+                        bpObservedValue = newVal;
+                        // Lightweight update — only redraw observed dot, not full chart
+                        renderObservedDot(svg, rc, xScale, newVal, centerY, allQ, enabledPIs);
+                    })
+                );
+        }
+
+        function updateBPCoverage(allQ, obsVal, enabledPIs) {
+            const el = document.getElementById('bp-coverage');
+            el.innerHTML = '';
+
+            const piChecks = [
+                { level: 95, lower: '0.025', upper: '0.975' },
+                { level: 80, lower: '0.1',   upper: '0.9'   },
+                { level: 50, lower: '0.25',  upper: '0.75'  },
+            ];
+
+            piChecks.forEach(pi => {
+                if (!enabledPIs.includes(pi.level)) return;
+                const inRange = obsVal >= allQ[pi.lower] && obsVal <= allQ[pi.upper];
+                const row = document.createElement('div');
+                row.className = 'coverage-row';
+                row.innerHTML = `<span class="coverage-check ${inRange ? 'coverage-hit' : 'coverage-miss'}">${inRange ? '&#10003;' : '&#10007;'}</span>
+                    <span>${pi.level}% PI: ${inRange ? 'Covered' : 'Miss'} [${d3.format(',')(Math.round(allQ[pi.lower]))} – ${d3.format(',')(Math.round(allQ[pi.upper]))}]</span>`;
+                el.appendChild(row);
+            });
+        }
+
+        function setupBoxplotControls() {
+            // PI toggle buttons
+            document.querySelectorAll('.toggle-btn[data-bp-interval]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    redrawBoxplot();
+                });
+            });
+
+            // Width slider
+            const slider = document.getElementById('bp-width-slider');
+            const label = document.getElementById('bp-width-value');
+            slider.addEventListener('input', () => {
+                const val = parseFloat(slider.value);
+                label.textContent = val.toFixed(1) + 'x';
+                redrawBoxplot();
+            });
+        }
+
+        // --- WIS Section ---
+
+        // Precomputed z-scores for standard normal quantiles
+        const Z_SCORES = {
+            '0.01': -2.3263, '0.025': -1.9600, '0.05': -1.6449,
+            '0.1': -1.2816, '0.15': -1.0364, '0.2': -0.8416,
+            '0.25': -0.6745, '0.3': -0.5244, '0.35': -0.3853,
+            '0.4': -0.2533, '0.45': -0.1257, '0.5': 0,
+            '0.55': 0.1257, '0.6': 0.2533, '0.65': 0.3853,
+            '0.7': 0.5244, '0.75': 0.6745, '0.8': 0.8416,
+            '0.85': 1.0364, '0.9': 1.2816, '0.95': 1.6449,
+            '0.975': 1.9600, '0.99': 2.3263
+        };
+
+        const WIS_PAIRS = [
+            {alpha: 0.02, lower: '0.01',  upper: '0.99'},
+            {alpha: 0.05, lower: '0.025', upper: '0.975'},
+            {alpha: 0.10, lower: '0.05',  upper: '0.95'},
+            {alpha: 0.20, lower: '0.1',   upper: '0.9'},
+            {alpha: 0.30, lower: '0.15',  upper: '0.85'},
+            {alpha: 0.40, lower: '0.2',   upper: '0.8'},
+            {alpha: 0.50, lower: '0.25',  upper: '0.75'},
+            {alpha: 0.60, lower: '0.3',   upper: '0.7'},
+            {alpha: 0.70, lower: '0.35',  upper: '0.65'},
+            {alpha: 0.80, lower: '0.4',   upper: '0.6'},
+            {alpha: 0.90, lower: '0.45',  upper: '0.55'},
+        ];
+
+        function generateQuantiles(median, sigma) {
+            const q = {};
+            Object.entries(Z_SCORES).forEach(([level, z]) => {
+                q[level] = Math.max(0, median + z * sigma);
+            });
+            return q;
+        }
+
+        // Synthetic forecast data at surveillance dates
+        // Model: decent forecaster, slightly biased
+        // Baseline: persistence (previous week's value), wide fixed PIs
+        const SYNTH_DATA = [
+            { date: new Date('2025-11-08'), observed: 1774, modelMedian: 1650, baselineMedian: 1348 },
+            { date: new Date('2025-11-15'), observed: 2417, modelMedian: 2500, baselineMedian: 1774 },
+            { date: new Date('2025-11-22'), observed: 3528, modelMedian: 3200, baselineMedian: 2417 },
+            { date: new Date('2025-11-29'), observed: 5133, modelMedian: 5400, baselineMedian: 3528 },
+            { date: new Date('2025-12-06'), observed: 7397, modelMedian: 7100, baselineMedian: 5133 },
+        ];
+
+        // Map PI toggle levels to their WIS pairs
+        const PI_TO_PAIRS = {
+            95: [
+                {alpha: 0.02, lower: '0.01',  upper: '0.99'},
+                {alpha: 0.05, lower: '0.025', upper: '0.975'},
+                {alpha: 0.10, lower: '0.05',  upper: '0.95'},
+            ],
+            80: [
+                {alpha: 0.20, lower: '0.1',   upper: '0.9'},
+                {alpha: 0.30, lower: '0.15',  upper: '0.85'},
+                {alpha: 0.40, lower: '0.2',   upper: '0.8'},
+            ],
+            50: [
+                {alpha: 0.50, lower: '0.25',  upper: '0.75'},
+                {alpha: 0.60, lower: '0.3',   upper: '0.7'},
+                {alpha: 0.70, lower: '0.35',  upper: '0.65'},
+                {alpha: 0.80, lower: '0.4',   upper: '0.6'},
+                {alpha: 0.90, lower: '0.45',  upper: '0.55'},
+            ],
+        };
+
+        function computeWIS(allQ, y, pairs) {
+            pairs = pairs || WIS_PAIRS;
+            const median = allQ['0.5'];
+            const K = pairs.length;
+            let dispersion = 0, underpred = 0, overpred = 0;
+
+            pairs.forEach(({alpha, lower, upper}) => {
+                const l = allQ[lower], u = allQ[upper];
+                const w = alpha / 2;
+                dispersion += w * (u - l);
+                if (y > u) underpred += w * (2 / alpha) * (y - u);
+                if (y < l) overpred  += w * (2 / alpha) * (l - y);
+            });
+
+            const absErr = 0.5 * Math.abs(y - median);
+            const denom = K + 0.5;
+            return {
+                dispersion: dispersion / denom,
+                underprediction: underpred / denom,
+                overprediction: overpred / denom,
+                total: (dispersion + underpred + overpred + absErr) / denom
+            };
+        }
+
+        // --- Section 1: Box-rectangle chart using real forecast data ---
+        function drawBoxChart(enabledIntervals) {
+            const { forecast, surveillance } = chartData;
+
+            d3.select('#wis-box-chart').selectAll('*').remove();
+
+            const margin = {top: 20, right: 30, bottom: 50, left: 70};
+            const container = document.getElementById('wis-box-chart');
+            const width = container.clientWidth - margin.left - margin.right;
+            const height = 380 - margin.top - margin.bottom;
+
+            const svgEl = d3.select('#wis-box-chart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom);
+
+            const svg = svgEl.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const rc = rough.svg(svgEl.node());
+
+            // Scales — same domain as PI tab
+            const allDates = [...surveillance.map(d => d.date), ...forecast.map(d => d.date)];
+            const allValues = [
+                ...surveillance.map(d => d.value),
+                ...forecast.flatMap(d => [d.q025, d.q975])
+            ];
+
+            const xScale = d3.scaleTime()
+                .domain(d3.extent(allDates))
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(allValues) * 1.1])
+                .range([height, 0]);
+
+            // Sketchy axes
+            svg.node().appendChild(rc.line(0, height, width, height, {
+                stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 1
+            }));
+            svg.node().appendChild(rc.line(0, 0, 0, height, {
+                stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 2
+            }));
+
+            xScale.ticks(6).forEach((tick, i) => {
+                const x = xScale(tick);
+                svg.node().appendChild(rc.line(x, height, x, height + 6, {
+                    stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i
+                }));
+                svg.append('text').attr('class', 'tick-label')
+                    .attr('x', x).attr('y', height + 20)
+                    .attr('text-anchor', 'middle')
+                    .text(d3.timeFormat('%b %d')(tick));
+            });
+
+            yScale.ticks(6).forEach((tick, i) => {
+                const y = yScale(tick);
+                svg.node().appendChild(rc.line(-6, y, 0, y, {
+                    stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 20 + i
+                }));
+                svg.append('text').attr('class', 'tick-label')
+                    .attr('x', -10).attr('y', y + 4)
+                    .attr('text-anchor', 'end')
+                    .text(d3.format(',')(tick));
+            });
+
+            svg.append('text').attr('class', 'axis-label')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -55).attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .text('Weekly Hospitalizations');
+
+            svg.append('text').attr('class', 'axis-label')
+                .attr('x', width / 2).attr('y', height + 42)
+                .attr('text-anchor', 'middle')
+                .text('Week');
+
+            // Band half-width in pixels
+            const dateSpan = forecast.length > 1
+                ? xScale(forecast[1].date) - xScale(forecast[0].date)
+                : 60;
+            const bandHW = Math.min(dateSpan * 0.35, 28);
+
+            // PI definitions
+            const pis = [
+                {level: 95, lower: 'q025', upper: 'q975', color: COLORS.pi95, opacity: 0.6},
+                {level: 80, lower: 'q100', upper: 'q900', color: COLORS.pi80, opacity: 0.7},
+                {level: 50, lower: 'q250', upper: 'q750', color: COLORS.pi50, opacity: 0.8},
+            ];
+
+            // Draw rectangles at each forecast date
+            pis.forEach(pi => {
+                if (!enabledIntervals.includes(pi.level)) return;
+                forecast.forEach((d, i) => {
+                    const cx = xScale(d.date);
+                    const top = yScale(d[pi.upper]);
+                    const bot = yScale(d[pi.lower]);
+                    const rect = rc.rectangle(cx - bandHW, top, bandHW * 2, bot - top, {
+                        fill: pi.color, fillStyle: 'solid',
+                        stroke: pi.color, strokeWidth: 1,
+                        roughness: 1.2, seed: pi.level * 100 + i
+                    });
+                    rect.style.opacity = pi.opacity;
+                    svg.node().appendChild(rect);
+                });
+            });
+
+            // Forecast median dots (white fill, dark border — out-of-sample)
+            forecast.forEach((d, i) => {
+                svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.q500), 10, {
+                    fill: 'white', fillStyle: 'solid',
+                    stroke: COLORS.observed, strokeWidth: 2,
+                    roughness: 0.8, seed: 500 + i
+                }));
+            });
+
+            // Observed line + dots
+            const obsLine = d3.line().x(d => xScale(d.date)).y(d => yScale(d.value));
+            svg.node().appendChild(rc.path(obsLine(surveillance), {
+                stroke: COLORS.observed, strokeWidth: 2, roughness: 1, fill: 'none', seed: 550
+            }));
+            surveillance.forEach((d, i) => {
+                svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.value), 10, {
+                    fill: COLORS.observed, fillStyle: 'solid',
+                    stroke: COLORS.observed, strokeWidth: 1,
+                    roughness: 1, seed: 560 + i
+                }));
+            });
+
+            // Legend
+            const lg = svg.append('g').attr('transform', `translate(${width - 170}, 10)`);
+            lg.node().appendChild(rc.circle(8, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 0.8, seed: 570 }));
+            lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('Observed');
+            lg.node().appendChild(rc.circle(8, 18, 8, { fill: 'white', fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 2, roughness: 0.8, seed: 571 }));
+            lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 22).text('Forecast median');
+        }
+
+        function setupWISBoxControls() {
+            document.querySelectorAll('.toggle-btn[data-wis-box-interval]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    const enabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-wis-box-interval]'))
+                        .map(b => parseInt(b.dataset.wisBoxInterval));
+                    drawBoxChart(enabled);
+                });
+            });
+        }
+
+        function drawWISDecomp(wis) {
+            const el = d3.select('#wis-decomp');
+            el.selectAll('*').remove();
+
+            const total = wis.total;
+            if (total === 0) return;
+
+            const barW = 260, barH = 26, pad = 4;
+            const svgBar = el.append('svg').attr('width', barW + 10).attr('height', barH + 28);
+            const rc = rough.svg(svgBar.node());
+
+            const parts = [
+                { label: 'Dispersion', value: wis.dispersion, color: '#5ACDC5' },
+                { label: 'Under', value: wis.underprediction, color: '#E87D5F' },
+                { label: 'Over', value: wis.overprediction, color: '#8B6DB0' },
+            ];
+
+            let x = 0;
+            parts.forEach((p, i) => {
+                const w = (p.value / total) * barW;
+                if (w > 1) {
+                    svgBar.node().appendChild(rc.rectangle(x, 0, w, barH, {
+                        fill: p.color, fillStyle: 'solid', stroke: 'none',
+                        roughness: 0.8, seed: 1000 + i
+                    }));
+                    if (w > 40) {
+                        svgBar.append('text')
+                            .attr('x', x + w / 2).attr('y', barH / 2 + 5)
+                            .attr('text-anchor', 'middle')
+                            .attr('class', 'tick-label')
+                            .style('fill', 'white').style('font-size', '11px')
+                            .text(Math.round(p.value));
+                    }
+                    x += w;
+                }
+            });
+
+            // Labels below bar
+            x = 0;
+            parts.forEach(p => {
+                const w = (p.value / total) * barW;
+                if (w > 30) {
+                    svgBar.append('text')
+                        .attr('x', x + w / 2).attr('y', barH + 16)
+                        .attr('text-anchor', 'middle')
+                        .style('font-size', '10px').style('fill', '#1C2442')
+                        .style('font-family', "'Patrick Hand', cursive")
+                        .text(p.label);
+                }
+                x += w;
+            });
+        }
+
+        // --- Section 4: Relative WIS chart (model vs baseline, real data) ---
+        function drawRWISChart() {
+            const { forecast, surveillance, baseline } = chartData;
+
+            d3.select('#rwis-chart').selectAll('*').remove();
+
+            const margin = {top: 20, right: 30, bottom: 50, left: 70};
+            const container = document.getElementById('rwis-chart');
+            const width = container.clientWidth - margin.left - margin.right;
+            const height = 380 - margin.top - margin.bottom;
+
+            const svgEl = d3.select('#rwis-chart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom);
+
+            const svg = svgEl.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const rc = rough.svg(svgEl.node());
+
+            // Scales — use upper 80% PI for range, ignore baseline lower bounds (can be 0)
+            const allDates = [...surveillance.map(d => d.date), ...forecast.map(d => d.date), ...baseline.map(d => d.date)];
+            const allValues = [
+                ...surveillance.map(d => d.value),
+                ...forecast.flatMap(d => [d.q100, d.q900]),
+                ...baseline.map(d => d.q900)
+            ];
+
+            const xScale = d3.scaleTime()
+                .domain(d3.extent(allDates))
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(allValues) * 1.1])
+                .range([height, 0]);
+
+            // Sketchy axes
+            svg.node().appendChild(rc.line(0, height, width, height, {
+                stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 1
+            }));
+            svg.node().appendChild(rc.line(0, 0, 0, height, {
+                stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 2
+            }));
+
+            xScale.ticks(6).forEach((tick, i) => {
+                const x = xScale(tick);
+                svg.node().appendChild(rc.line(x, height, x, height + 6, {
+                    stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i
+                }));
+                svg.append('text').attr('class', 'tick-label')
+                    .attr('x', x).attr('y', height + 20)
+                    .attr('text-anchor', 'middle')
+                    .text(d3.timeFormat('%b %d')(tick));
+            });
+
+            yScale.ticks(6).forEach((tick, i) => {
+                const y = yScale(tick);
+                svg.node().appendChild(rc.line(-6, y, 0, y, {
+                    stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 20 + i
+                }));
+                svg.append('text').attr('class', 'tick-label')
+                    .attr('x', -10).attr('y', y + 4)
+                    .attr('text-anchor', 'end')
+                    .text(d3.format(',')(tick));
+            });
+
+            svg.append('text').attr('class', 'axis-label')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -55).attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .text('Weekly Hospitalizations');
+
+            svg.append('text').attr('class', 'axis-label')
+                .attr('x', width / 2).attr('y', height + 42)
+                .attr('text-anchor', 'middle')
+                .text('Week');
+
+            // Band half-width — model on left, baseline on right
+            const dateSpan = forecast.length > 1
+                ? xScale(forecast[1].date) - xScale(forecast[0].date)
+                : 60;
+            const bandHW = Math.min(dateSpan * 0.22, 22);
+            const gap = 3; // px gap between model and baseline boxes
+
+            // Draw model 80% PI boxes (left side)
+            forecast.forEach((d, i) => {
+                const cx = xScale(d.date) - gap / 2 - bandHW;
+                const top = yScale(d.q900);
+                const bot = yScale(d.q100);
+                const rect = rc.rectangle(cx, top, bandHW * 2, bot - top, {
+                    fill: COLORS.pi95, fillStyle: 'solid',
+                    stroke: COLORS.pi80, strokeWidth: 1,
+                    roughness: 1.2, seed: 2000 + i
+                });
+                rect.style.opacity = 0.6;
+                svg.node().appendChild(rect);
+            });
+
+            // Draw model 50% PI boxes (left side)
+            forecast.forEach((d, i) => {
+                const cx = xScale(d.date) - gap / 2 - bandHW;
+                const top = yScale(d.q750);
+                const bot = yScale(d.q250);
+                const rect = rc.rectangle(cx + bandHW * 0.3, top, bandHW * 1.4, bot - top, {
+                    fill: COLORS.pi50, fillStyle: 'solid',
+                    stroke: COLORS.pi50, strokeWidth: 1,
+                    roughness: 1.2, seed: 2100 + i
+                });
+                rect.style.opacity = 0.8;
+                svg.node().appendChild(rect);
+            });
+
+            // Draw baseline 80% PI boxes (right side, hachure fill)
+            baseline.forEach((d, i) => {
+                const cx = xScale(d.date) + gap / 2;
+                const upper = d.q900;
+                const lower = Math.max(d.q100, d.q500 * 0.3); // clamp to avoid boxes going to 0
+                const top = yScale(upper);
+                const bot = yScale(lower);
+                svg.node().appendChild(rc.rectangle(cx, top, bandHW * 2, bot - top, {
+                    fill: COLORS.baseline, fillStyle: 'hachure',
+                    fillWeight: 1.5, hachureGap: 5,
+                    stroke: COLORS.baseline, strokeWidth: 1,
+                    roughness: 1.2, seed: 2200 + i
+                }));
+            });
+
+            // Draw baseline 50% PI boxes (right side, hachure)
+            baseline.forEach((d, i) => {
+                const cx = xScale(d.date) + gap / 2;
+                const top = yScale(d.q750);
+                const bot = yScale(d.q250);
+                svg.node().appendChild(rc.rectangle(cx + bandHW * 0.3, top, bandHW * 1.4, bot - top, {
+                    fill: COLORS.baseline, fillStyle: 'hachure',
+                    fillWeight: 2, hachureGap: 4,
+                    stroke: COLORS.baseline, strokeWidth: 1,
+                    roughness: 1.2, seed: 2300 + i
+                }));
+            });
+
+            // Forecast median dots (white, dark border)
+            forecast.forEach((d, i) => {
+                svg.node().appendChild(rc.circle(xScale(d.date) - gap / 2 - bandHW + bandHW, yScale(d.q500), 8, {
+                    fill: 'white', fillStyle: 'solid',
+                    stroke: COLORS.observed, strokeWidth: 2,
+                    roughness: 0.8, seed: 2400 + i
+                }));
+            });
+
+            // Baseline median dots (orange, solid)
+            baseline.forEach((d, i) => {
+                svg.node().appendChild(rc.circle(xScale(d.date) + gap / 2 + bandHW, yScale(d.q500), 8, {
+                    fill: COLORS.baseline, fillStyle: 'solid',
+                    stroke: COLORS.baseline, strokeWidth: 1,
+                    roughness: 0.8, seed: 2500 + i
+                }));
+            });
+
+            // Observed line + dots
+            const obsLine = d3.line().x(d => xScale(d.date)).y(d => yScale(d.value));
+            svg.node().appendChild(rc.path(obsLine(surveillance), {
+                stroke: COLORS.observed, strokeWidth: 2, roughness: 1, fill: 'none', seed: 2600
+            }));
+            surveillance.forEach((d, i) => {
+                svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.value), 10, {
+                    fill: COLORS.observed, fillStyle: 'solid',
+                    stroke: COLORS.observed, strokeWidth: 1,
+                    roughness: 1, seed: 2610 + i
+                }));
+            });
+
+            // Legend
+            const lg = svg.append('g').attr('transform', `translate(${width - 200}, 10)`);
+            lg.node().appendChild(rc.circle(8, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 0.8, seed: 2700 }));
+            lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('Observed');
+            lg.node().appendChild(rc.rectangle(0, 12, 16, 10, { fill: COLORS.pi80, fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 2701 }));
+            lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 22).text('Model');
+            lg.node().appendChild(rc.rectangle(0, 28, 16, 10, { fill: COLORS.baseline, fillStyle: 'hachure', fillWeight: 1.5, hachureGap: 4, stroke: COLORS.baseline, roughness: 0.8, seed: 2702 }));
+            lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 38).text('Baseline');
+
+            // --- Compute real WIS for overlapping dates ---
+            // Match forecast and baseline by date string
+            const baselineByDate = {};
+            baseline.forEach(d => {
+                baselineByDate[d.date.toISOString().slice(0, 10)] = d;
+            });
+
+            const survByDate = {};
+            surveillance.forEach(d => {
+                survByDate[d.date.toISOString().slice(0, 10)] = d.value;
+            });
+
+            let modelWISSum = 0, baselineWISSum = 0, matchCount = 0;
+
+            forecast.forEach(fd => {
+                const dateKey = fd.date.toISOString().slice(0, 10);
+                const obs = survByDate[dateKey];
+                const bd = baselineByDate[dateKey];
+                if (obs !== undefined && bd) {
+                    const mw = computeWIS(fd.allQ, obs);
+                    const bw = computeWIS(bd.allQ, obs);
+                    modelWISSum += mw.total;
+                    baselineWISSum += bw.total;
+                    matchCount++;
+                }
+            });
+
+            if (matchCount > 0) {
+                const avgModel = modelWISSum / matchCount;
+                const avgBaseline = baselineWISSum / matchCount;
+                const rWIS = avgBaseline > 0 ? avgModel / avgBaseline : NaN;
+
+                document.getElementById('wis-avg-model-val').textContent = Math.round(avgModel).toLocaleString();
+                document.getElementById('wis-baseline-val').textContent = Math.round(avgBaseline).toLocaleString();
+
+                const rwisEl = document.getElementById('rwis-val');
+                rwisEl.textContent = rWIS.toFixed(2);
+                rwisEl.className = 'rwis-value ' + (rWIS < 1 ? 'rwis-good' : 'rwis-bad');
+
+                const interpEl = document.getElementById('rwis-interp');
+                if (rWIS < 1) {
+                    interpEl.textContent = `Model is ${Math.round((1 - rWIS) * 100)}% better than the baseline`;
+                } else if (rWIS > 1) {
+                    interpEl.textContent = `Model is ${Math.round((rWIS - 1) * 100)}% worse than the baseline`;
+                } else {
+                    interpEl.textContent = 'Model performs the same as baseline';
+                }
+            } else {
+                document.getElementById('wis-avg-model-val').textContent = 'N/A';
+                document.getElementById('wis-baseline-val').textContent = 'N/A';
+                document.getElementById('rwis-val').textContent = 'N/A';
+                document.getElementById('rwis-interp').textContent = 'No overlapping dates between forecast, baseline, and observations';
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

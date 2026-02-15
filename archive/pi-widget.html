@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Interval Interactive Widget</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #1C2442;
+            padding: 20px;
+        }
+
+        .widget-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1C2442;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: #2F4474;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #344D84;
+            background-color: white;
+            color: #344D84;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .control-btn.active {
+            background-color: #344D84;
+            color: white;
+        }
+
+        .control-btn:hover {
+            background-color: #1E9CC5;
+            border-color: #1E9CC5;
+            color: white;
+        }
+
+        .control-btn.info {
+            background-color: #DFF8ED;
+            border-color: #5ACDC5;
+            color: #1C2442;
+        }
+
+        .control-btn.info:hover {
+            background-color: #5ACDC5;
+            color: white;
+        }
+
+        #chart {
+            width: 100%;
+            height: 450px;
+            margin-bottom: 20px;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background-color: rgba(28, 36, 66, 0.95);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .tooltip-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-value {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .info-panel {
+            display: none;
+            background-color: #DFF8ED;
+            border: 2px solid #5ACDC5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-panel h3 {
+            color: #344D84;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        .info-panel p {
+            line-height: 1.7;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .info-panel .highlight {
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #1E9CC5;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-container">
+        <div class="header">
+            <h2>Understanding Prediction Intervals</h2>
+            <p>Explore how forecasts quantify uncertainty</p>
+        </div>
+
+        <div id="loading" class="loading">Loading data...</div>
+
+        <div id="main-widget" style="display:none;">
+            <div class="controls">
+                <button class="control-btn active" data-interval="95">95% PI</button>
+                <button class="control-btn active" data-interval="80">80% PI</button>
+                <button class="control-btn active" data-interval="50">50% PI</button>
+                <button class="control-btn info" id="info-btn">ℹ What are PIs?</button>
+            </div>
+
+            <div id="chart"></div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #1C2442; border-radius: 50%; width: 12px; height: 12px;"></div>
+                    <span>Observed Data</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #1E9CC5;"></div>
+                    <span>Forecast Median</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #DFF8ED;"></div>
+                    <span>95% PI</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #5ACDC5;"></div>
+                    <span>80% PI</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #344D84;"></div>
+                    <span>50% PI</span>
+                </div>
+            </div>
+
+            <div id="info-panel" class="info-panel">
+                <h3>What are Prediction Intervals?</h3>
+                <p>Prediction intervals (PIs) quantify uncertainty in forecasts by showing a range where we expect future values to fall with a certain probability.</p>
+
+                <div class="highlight">
+                    <strong>Example:</strong> An 80% PI means that if we make 100 forecasts, about 80 of the actual observed values should fall within the predicted range.
+                </div>
+
+                <p><strong>Key Points:</strong></p>
+                <p>• Wider intervals = higher confidence but less precision</p>
+                <p>• Narrower intervals = more precise but lower confidence</p>
+                <p>• Good forecasts have coverage close to the nominal level</p>
+            </div>
+        </div>
+
+        <div class="tooltip" id="tooltip">
+            <div class="tooltip-label">Date</div>
+            <div class="tooltip-value"></div>
+        </div>
+    </div>
+
+    <script>
+        const COLORS = {
+            observed: '#1C2442',
+            forecast: '#1E9CC5',
+            pi95: '#DFF8ED',
+            pi80: '#5ACDC5',
+            pi50: '#344D84'
+        };
+
+        let chartData = null;
+        const tooltip = d3.select('#tooltip');
+
+        async function loadData() {
+            try {
+                const [forecastRaw, surveillanceRaw] = await Promise.all([
+                    d3.csv('forecast.csv'),
+                    d3.csv('target.csv')
+                ]);
+
+                const forecastByDate = d3.group(forecastRaw, d => d.target_end_date);
+                const forecastData = Array.from(forecastByDate, ([date, rows]) => {
+                    const q = {};
+                    rows.forEach(r => {
+                        if (r.output_type === 'quantile') q[r.output_type_id] = +r.value;
+                    });
+                    return {
+                        date: new Date(date),
+                        q025: q['0.025'], q100: q['0.1'], q250: q['0.25'],
+                        q500: q['0.5'], q750: q['0.75'], q900: q['0.9'], q975: q['0.975']
+                    };
+                }).sort((a, b) => a.date - b.date);
+
+                const byDate = d3.rollup(surveillanceRaw, v => d3.max(v, d => +d.observation || 0), d => d.target_end_date);
+                const surveillanceData = Array.from(byDate, ([date, value]) => ({
+                    date: new Date(date),
+                    value: value
+                })).sort((a, b) => a.date - b.date);
+
+                chartData = { forecast: forecastData, surveillance: surveillanceData };
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main-widget').style.display = 'block';
+
+                drawChart([95, 80, 50]);
+                setupControls();
+
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `<p style="color: #c00;">Error loading data: ${error.message}</p>`;
+            }
+        }
+
+        function drawChart(enabledIntervals) {
+            const { forecast, surveillance } = chartData;
+            d3.select('#chart').selectAll('*').remove();
+
+            const margin = {top: 20, right: 30, bottom: 50, left: 70};
+            const container = document.getElementById('chart');
+            const width = container.clientWidth - margin.left - margin.right;
+            const height = 450 - margin.top - margin.bottom;
+
+            const svg = d3.select('#chart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const allDates = [...surveillance.map(d => d.date), ...forecast.map(d => d.date)];
+            const allValues = [...surveillance.map(d => d.value), ...forecast.flatMap(d => [d.q025, d.q975])];
+
+            const xScale = d3.scaleTime().domain(d3.extent(allDates)).range([0, width]);
+            const yScale = d3.scaleLinear().domain([0, d3.max(allValues) * 1.1]).range([height, 0]);
+
+            // Axes
+            svg.append('g')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.timeFormat('%b %d')))
+                .style('font-size', '11px');
+
+            svg.append('g')
+                .call(d3.axisLeft(yScale).ticks(6))
+                .style('font-size', '11px');
+
+            svg.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -50)
+                .attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '12px')
+                .style('font-weight', '600')
+                .style('fill', '#1C2442')
+                .text('Weekly Hospitalizations');
+
+            // Draw PIs
+            const pis = [
+                {level: 95, lower: 'q025', upper: 'q975', color: COLORS.pi95, opacity: 0.3},
+                {level: 80, lower: 'q100', upper: 'q900', color: COLORS.pi80, opacity: 0.4},
+                {level: 50, lower: 'q250', upper: 'q750', color: COLORS.pi50, opacity: 0.5}
+            ];
+
+            pis.forEach(pi => {
+                if (enabledIntervals.includes(pi.level)) {
+                    const area = d3.area()
+                        .x(d => xScale(d.date))
+                        .y0(d => yScale(d[pi.lower]))
+                        .y1(d => yScale(d[pi.upper]));
+
+                    svg.append('path')
+                        .datum(forecast)
+                        .attr('fill', pi.color)
+                        .attr('opacity', pi.opacity)
+                        .attr('d', area);
+
+                    // Draw PI bound lines
+                    [pi.lower, pi.upper].forEach(bound => {
+                        const line = d3.line()
+                            .x(d => xScale(d.date))
+                            .y(d => yScale(d[bound]));
+
+                        svg.append('path')
+                            .datum(forecast)
+                            .attr('fill', 'none')
+                            .attr('stroke', pi.color)
+                            .attr('stroke-width', 1.5)
+                            .attr('d', line);
+                    });
+                }
+            });
+
+            // Median forecast line
+            const medianLine = d3.line()
+                .x(d => xScale(d.date))
+                .y(d => yScale(d.q500));
+
+            svg.append('path')
+                .datum(forecast)
+                .attr('fill', 'none')
+                .attr('stroke', COLORS.forecast)
+                .attr('stroke-width', 2.5)
+                .attr('d', medianLine);
+
+            // Observed dots with hover
+            svg.selectAll('.obs-dot')
+                .data(surveillance)
+                .enter()
+                .append('circle')
+                .attr('cx', d => xScale(d.date))
+                .attr('cy', d => yScale(d.value))
+                .attr('r', 4)
+                .attr('fill', COLORS.observed)
+                .style('cursor', 'pointer')
+                .on('mouseover', function(event, d) {
+                    d3.select(this).attr('r', 6);
+                    const forecastPoint = forecast.find(f => f.date.getTime() === d.date.getTime());
+                    let tooltipHTML = `<div class="tooltip-label">Date: ${d3.timeFormat('%b %d, %Y')(d.date)}</div>`;
+                    tooltipHTML += `<div class="tooltip-value">Observed: ${d.value.toLocaleString()}</div>`;
+                    if (forecastPoint) {
+                        tooltipHTML += `<div class="tooltip-value">Forecast: ${Math.round(forecastPoint.q500).toLocaleString()}</div>`;
+                        tooltipHTML += `<div class="tooltip-value">95% PI: [${Math.round(forecastPoint.q025).toLocaleString()}, ${Math.round(forecastPoint.q975).toLocaleString()}]</div>`;
+                    }
+                    tooltip.html(tooltipHTML)
+                        .style('left', (event.pageX + 15) + 'px')
+                        .style('top', (event.pageY - 15) + 'px')
+                        .classed('show', true);
+                })
+                .on('mouseout', function() {
+                    d3.select(this).attr('r', 4);
+                    tooltip.classed('show', false);
+                });
+        }
+
+        function setupControls() {
+            document.querySelectorAll('.control-btn[data-interval]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    const enabled = Array.from(document.querySelectorAll('.control-btn.active[data-interval]'))
+                        .map(b => parseInt(b.dataset.interval));
+                    drawChart(enabled);
+                });
+            });
+
+            document.getElementById('info-btn').addEventListener('click', () => {
+                const panel = document.getElementById('info-panel');
+                panel.classList.toggle('show');
+            });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
