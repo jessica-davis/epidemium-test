@@ -766,8 +766,7 @@ a.nav-item:hover {
                         <span class="nav-heading">1. Forecast Outputs</span>
                         <ul>
                             <li><a class="nav-item" data-section="section-pi">a. Prediction Intervals</a></li>
-                            <li><a class="nav-item" data-section="section-trajectories">b. Epidemic Trajectories</a></li>
-                            <li><a class="nav-item" data-section="section-trends">c. Trend Forecasts</a></li>
+                            <li><a class="nav-item" data-section="section-trends">b. Categorical Forecasts</a></li>
                         </ul>
                     </li>
                     <li>
@@ -814,8 +813,7 @@ a.nav-item:hover {
                         <p>What types of predictions do epidemic forecasters produce?</p>
                         <ul>
                             <li><a data-section="section-pi">Prediction Intervals</a> &mdash; Ranges where we expect future values to fall</li>
-                            <li><a data-section="section-trajectories">Epidemic Trajectories</a> &mdash; Stochastic realizations of potential epidemic futures</li>
-                            <li><a data-section="section-trends">Trend Forecasts</a> &mdash; Categorical predictions of activity direction</li>
+                            <li><a data-section="section-trends">Categorical Forecasts</a> &mdash; Trends, activity levels, and other categorical predictions</li>
                         </ul>
                     </div>
                     <div class="outline-card">
@@ -860,79 +858,45 @@ a.nav-item:hover {
                 </div>
             </section>
 
-            <!-- ==================== Epidemic Trajectories ==================== -->
-            <section id="section-trajectories" class="content-section">
-                <h2 class="section-heading" style="margin-bottom:5px;">Epidemic Trajectories</h2>
-                <p class="section-sub">Some models generate multiple potential epidemic futures rather than a single set of prediction intervals.</p>
-
-                <div class="content-wrapper">
-                    <div class="chart-section">
-                        <div class="chart-container">
-                            <h3 class="chart-title">Simulated Epidemic Trajectories</h3>
-                            <div id="trajectory-chart"></div>
-                        </div>
-                    </div>
-                    <div class="description-section">
-                        <h3>What are Epidemic Trajectories?</h3>
-                        <p class="definition">
-                            An epidemic trajectory is a single stochastic realization of a model &mdash; one plausible epidemic future sampled from the model's probability distribution.
-                        </p>
-                        <p>Many epidemic models are inherently <strong>stochastic</strong>: they simulate disease spread through random transmission events, variable contact patterns, and uncertain parameters. Each time the model is run, it produces a different trajectory.</p>
-                        <p>By running a model hundreds or thousands of times, forecasters build an <strong>ensemble</strong> of trajectories. This ensemble captures the full range of plausible futures, from best-case to worst-case scenarios.</p>
-
-                        <div class="example">
-                            <strong>From trajectories to prediction intervals</strong>
-                            <p>The prediction intervals you saw in the previous section are typically derived from trajectory ensembles. For example, sorting trajectory values at each time point and taking the 2.5th and 97.5th percentiles produces a 95% prediction interval.</p>
-                            <p style="margin-top:10px;">However, Juul et al. (2021) showed that computing statistics at fixed time points can <strong>underestimate extreme outcomes</strong> &mdash; the peak of individual trajectories may be systematically higher than the peak of the median curve.</p>
-                        </div>
-
-                        <div class="citation" style="margin-top:16px;">
-                            Juul JL, Gr&aelig;sb&oslash;ll K, Christiansen LE, Lehmann S (2021). Fixed-time descriptive statistics underestimate extremes of epidemic curve ensembles. <em>Nature Physics</em> 17: 5&ndash;8. <a href="https://doi.org/10.1038/s41567-020-01121-y" target="_blank" rel="noopener">doi:10.1038/s41567-020-01121-y</a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ==================== Trend / Activity Forecasts ==================== -->
+            <!-- ==================== Categorical Forecasts ==================== -->
             <section id="section-trends" class="content-section">
                 <h2 class="section-heading" style="margin-bottom:5px;">Categorical Forecasts</h2>
-                <p class="section-sub">Instead of predicting exact counts, categorical forecasts can predict the probability of a of future outcomes. For example the direction of change (trend) and magnitude (activity level).</p>
+                <p class="section-sub">Rather than predicting a specific value or interval, it can be just as useful to predict a <em>category</em>. For example, is disease activity high or low? Do we expect it to increase, decrease, or stay the same over the coming weeks?</p>
 
-                <div class="content-wrapper">
-                    <div class="chart-section">
-                        <div class="chart-container">
-                            <h3 class="chart-title">Rate Trend Categories</h3>
-                            <div id="trend-chart"></div>
-                        </div>
-                        
+                <div class="gauge-row" style="display:flex; gap:40px; justify-content:center; flex-wrap:wrap; margin:24px 0;">
+                    <div class="gauge-panel" style="text-align:center; flex:1; min-width:260px; max-width:400px;">
+                        <h3 class="chart-title" style="margin-bottom:4px;">Rate Trend</h3>
+                        <p style="font-size:0.82rem; color:#666; margin-bottom:8px;">Direction of change</p>
+                        <div id="trend-gauge"></div>
                     </div>
-                    <div class="description-section">
-                        <h3>What are Trend Forecasts?</h3>
-                        <p class="definition">
-                            A trend forecast predicts the <strong>categorical direction of change</strong> &mdash; whether disease activity will increase, stay stable, or decrease &mdash; rather than predicting an exact number.
-                        </p>
-                        <p>The CDC FluSight challenge includes an optional <strong>rate trend target</strong> where teams submit probabilities across five categories:</p>
-                        <div style="margin: 12px 0;">
-                            <div class="wis-component"><span class="swatch" style="background:#c0392b;"></span><span><strong>Large Increase</strong></span> <span class="swatch" style="background:#E87D5F;"></span><span><strong>Increase</strong></span>
-                            <span class="swatch" style="background:#999;"></span><span><strong>Stable</strong></span></div>
-                            <div class="wis-component"><span class="swatch" style="background:#5ACDC5;"></span><span><strong>Decrease</strong></span>
-                            <span class="swatch" style="background:#344D84;"></span><span><strong>Large Decrease</strong></span></div>
-                        </div>
-                        <p>Categories are determined by the <strong>change in hospitalization rate</strong> (per 100k population) between the baseline week and the forecast target date. Thresholds separating categories are calibrated from historical FluSurv-NET data, and week pairs with fewer than 10 admissions difference are classified as stable.</p>
-
-                        <div class="example">
-                            <strong>Why use categorical forecasts?</strong>
-                            <p>During periods of rapid epidemic change, exact count predictions are often unreliable. Categorical forecasts provide actionable information &mdash; "cases are likely increasing" &mdash; even when precise numbers are uncertain. They are evaluated using proper scoring rules like the <strong>Brier Score</strong> or <strong>Ranked Probability Score</strong>.</p>
-                        </div>
-
-                        <div class="citation" style="margin-top:16px;">
-                            Biggerstaff M, et al. (2024). Responding to the return of influenza in the United States. <em>JMIR Public Health and Surveillance</em> 10: e54340. <a href="https://doi.org/10.2196/54340" target="_blank" rel="noopener">doi:10.2196/54340</a>
-                        </div>
-                        <div class="citation" style="margin-top:8px;">
-                            CDC (2025). Framework for classifying disease trends applied to influenza-associated hospital admissions. <em>Open Forum Infectious Diseases</em> 12(8): ofaf460. <a href="https://doi.org/10.1093/ofid/ofaf460" target="_blank" rel="noopener">doi:10.1093/ofid/ofaf460</a>
-                        </div>
+                    <div class="gauge-panel" style="text-align:center; flex:1; min-width:260px; max-width:400px;">
+                        <h3 class="chart-title" style="margin-bottom:4px;">Activity Level</h3>
+                        <p style="font-size:0.82rem; color:#666; margin-bottom:8px;">Intensity of disease burden</p>
+                        <div id="activity-gauge"></div>
                     </div>
                 </div>
+
+                <div style="display:flex; gap:30px; flex-wrap:wrap; margin:20px 0;">
+                    <div style="flex:1; min-width:280px;">
+                        <h3 class="chart-title">Rate Trend Forecast</h3>
+                        <div id="trend-chart"></div>
+                    </div>
+                    <div style="flex:1; min-width:280px;">
+                        <h3 class="chart-title">Activity Level Forecast</h3>
+                        <div id="activity-chart"></div>
+                    </div>
+                </div>
+
+                <div class="example" style="margin-top:24px; max-width:800px; background:#f8f8f8; padding:20px; border-radius:6px;">
+                    <strong style="color:#344D84; display:block; margin-bottom:10px;">Why use categorical forecasts?</strong>
+                    <p style="font-size:0.9rem; line-height:1.7;">During periods of rapid epidemic change, exact count predictions are often unreliable. Categorical forecasts provide actionable information &mdash; "cases are likely increasing" &mdash; even when precise numbers are uncertain. They are evaluated using proper scoring rules like the <strong>Brier Score</strong> (for binary categories) or the <strong>Ranked Probability Score</strong> (for ordered categories like trend levels).</p>
+                </div>
+                    <div class="citation" style="margin-top:16px;">
+                        Biggerstaff M, et al. (2024). Responding to the return of influenza in the United States. <em>JMIR Public Health and Surveillance</em> 10: e54340. <a href="https://doi.org/10.2196/54340" target="_blank" rel="noopener">doi:10.2196/54340</a>
+                    </div>
+                    <div class="citation" style="margin-top:8px;">
+                        CDC (2025). Framework for classifying disease trends applied to influenza-associated hospital admissions. <em>Open Forum Infectious Diseases</em> 12(8): ofaf460. <a href="https://doi.org/10.1093/ofid/ofaf460" target="_blank" rel="noopener">doi:10.1093/ofid/ofaf460</a>
+                    </div>
             </section>
 
             <!-- ==================== Weighted Interval Score ==================== -->
@@ -1474,11 +1438,14 @@ function drawBoxChart(enabledIntervals) {
         });
     });
 
-    // Median blue line connecting forecast medians
-    const medianLine = d3.line().x(d => xScale(d.date)).y(d => yScale(d.q500));
-    svg.node().appendChild(rc.path(medianLine(forecast), {
-        stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 1, fill: 'none', seed: 42
-    }));
+    // Median blue line — horizontal segment within each box only
+    forecast.forEach((d, i) => {
+        const cx = xScale(d.date);
+        const my = yScale(d.q500);
+        svg.node().appendChild(rc.line(cx - bandHW, my, cx + bandHW, my, {
+            stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 0.8, seed: 42 + i
+        }));
+    });
 
     // Out-of-sample dots (white fill, dark border) — noisy increasing trend
     const oosData = getOOSValues(surveillance, forecast);
@@ -1949,16 +1916,18 @@ function drawRWISChart() {
     }
 }
 
-// --- Chart: Trajectories ---
-function drawTrajectoryChart() {
-    d3.select('#trajectory-chart').selectAll('*').remove();
+// --- Charts: Categorical Forecasts (Trend + Activity horizontal bars) ---
+function drawHorizontalBarChart(containerId, categories, probs, colors, seedBase) {
+    d3.select('#' + containerId).selectAll('*').remove();
 
-    const container = document.getElementById('trajectory-chart');
-    const margin = {top: 20, right: 30, bottom: 50, left: 70};
+    const container = document.getElementById(containerId);
+    const margin = {top: 8, right: 60, bottom: 10, left: 120};
     const width = container.clientWidth - margin.left - margin.right;
-    const height = 380 - margin.top - margin.bottom;
+    const barHeight = 32;
+    const gap = 10;
+    const height = categories.length * (barHeight + gap) - gap;
 
-    const svgEl = d3.select('#trajectory-chart')
+    const svgEl = d3.select('#' + containerId)
         .append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom);
@@ -1968,194 +1937,189 @@ function drawTrajectoryChart() {
 
     const rc = rough.svg(svgEl.node());
 
-    // Generate synthetic trajectory data: SIR-like epidemic curves
-    const nWeeks = 20;
-    const nTrajectories = 30;
-    const weeks = d3.range(nWeeks).map(i => {
-        const d = new Date('2025-10-01');
-        d.setDate(d.getDate() + i * 7);
-        return d;
+    const xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
+
+    categories.forEach((cat, i) => {
+        const y = i * (barHeight + gap);
+        const prob = probs[cat];
+        const barW = xScale(prob);
+
+        // Bar
+        if (barW > 2) {
+            svg.node().appendChild(rc.rectangle(0, y, barW, barHeight, {
+                fill: colors[cat], fillStyle: 'solid',
+                stroke: colors[cat], strokeWidth: 0.5,
+                roughness: 1.2, seed: seedBase + i
+            }));
+        }
+
+        // Category label (left)
+        svg.append('text').attr('class', 'tick-label')
+            .attr('x', -8).attr('y', y + barHeight / 2 + 4)
+            .attr('text-anchor', 'end')
+            .style('font-size', '13px')
+            .text(cat);
+
+        // Percentage label (right of bar)
+        svg.append('text').attr('class', 'tick-label')
+            .attr('x', barW + 8).attr('y', y + barHeight / 2 + 4)
+            .style('font-size', '13px').style('font-weight', '600')
+            .text(Math.round(prob * 100) + '%');
     });
-
-    // Seeded pseudo-random for reproducibility
-    function seededRand(seed) {
-        let s = seed;
-        return function() {
-            s = (s * 16807 + 0) % 2147483647;
-            return s / 2147483647;
-        };
-    }
-
-    const trajectories = [];
-    for (let t = 0; t < nTrajectories; t++) {
-        const rand = seededRand(42 + t * 17);
-        const peakWeek = 8 + Math.floor(rand() * 6 - 3); // peak around week 8-11
-        const peakHeight = 8000 + rand() * 12000; // peak between 8k-20k
-        const growth = 0.35 + rand() * 0.3;
-        const traj = weeks.map((date, i) => {
-            // Log-normal-ish shape
-            const x = i - peakWeek;
-            const base = peakHeight * Math.exp(-0.5 * (x / (growth * 5)) * (x / (growth * 5)));
-            const noise = (rand() - 0.5) * base * 0.15;
-            return { date, value: Math.max(100, base + noise) };
-        });
-        trajectories.push(traj);
-    }
-
-    const xScale = d3.scaleTime()
-        .domain(d3.extent(weeks))
-        .range([0, width]);
-
-    const yMax = d3.max(trajectories, traj => d3.max(traj, d => d.value));
-    const yScale = d3.scaleLinear()
-        .domain([0, yMax * 1.1])
-        .range([height, 0]);
-
-    // Axes
-    svg.node().appendChild(rc.line(0, height, width, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 1 }));
-    svg.node().appendChild(rc.line(0, 0, 0, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 2 }));
-
-    xScale.ticks(6).forEach((tick, i) => {
-        const x = xScale(tick);
-        svg.node().appendChild(rc.line(x, height, x, height + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick));
-    });
-
-    yScale.ticks(6).forEach((tick, i) => {
-        const y = yScale(tick);
-        svg.node().appendChild(rc.line(-6, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 20 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(d3.format(',')(tick));
-    });
-
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('Weekly Hospitalizations');
-    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('Week');
-
-    // Draw individual trajectories (light, sketchy)
-    const lineGen = d3.line().x(d => xScale(d.date)).y(d => yScale(d.value));
-
-    trajectories.forEach((traj, t) => {
-        svg.node().appendChild(rc.path(lineGen(traj), {
-            stroke: COLORS.forecast, strokeWidth: 1, roughness: 0.8, fill: 'none', seed: 3000 + t
-        }));
-    });
-
-    // Compute and draw median trajectory
-    const medianTraj = weeks.map((date, i) => {
-        const vals = trajectories.map(t => t[i].value).sort(d3.ascending);
-        return { date, value: d3.median(vals) };
-    });
-
-    svg.node().appendChild(rc.path(lineGen(medianTraj), {
-        stroke: COLORS.observed, strokeWidth: 3, roughness: 1, fill: 'none', seed: 3100
-    }));
-
-    // Legend
-    const lg = svg.append('g').attr('transform', `translate(${width - 200}, 10)`);
-    lg.node().appendChild(rc.line(0, 0, 20, 0, { stroke: COLORS.forecast, strokeWidth: 1.5, roughness: 0.8, seed: 3200 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 26).attr('y', 4).text('Individual trajectories');
-    lg.node().appendChild(rc.line(0, 18, 20, 18, { stroke: COLORS.observed, strokeWidth: 3, roughness: 0.8, seed: 3201 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 26).attr('y', 22).text('Median');
 }
 
-// --- Chart: Trend Forecast ---
 function drawTrendChart() {
-    d3.select('#trend-chart').selectAll('*').remove();
+    const categories = ['Large Increase', 'Increase', 'Stable', 'Decrease', 'Large Decrease'];
+    const probs = { 'Large Increase': 0.08, 'Increase': 0.52, 'Stable': 0.28, 'Decrease': 0.09, 'Large Decrease': 0.03 };
+    const colors = {
+        'Large Increase': '#c0392b', 'Increase': '#E87D5F', 'Stable': '#999',
+        'Decrease': '#5ACDC5', 'Large Decrease': '#344D84'
+    };
+    drawHorizontalBarChart('trend-chart', categories, probs, colors, 4000);
+}
 
-    const container = document.getElementById('trend-chart');
-    const margin = {top: 20, right: 20, bottom: 40, left: 20};
-    const width = container.clientWidth - margin.left - margin.right;
-    const height = 300 - margin.top - margin.bottom;
+function drawActivityChart() {
+    const categories = ['Very High', 'High', 'Medium', 'Low'];
+    const probs = { 'Very High': 0.05, 'High': 0.35, 'Medium': 0.45, 'Low': 0.15 };
+    const colors = {
+        'Very High': '#c0392b', 'High': '#E87D5F', 'Medium': '#F2C45A', 'Low': '#5ACDC5'
+    };
+    drawHorizontalBarChart('activity-chart', categories, probs, colors, 4100);
+}
 
-    const svgEl = d3.select('#trend-chart')
+// --- Charts: Gauge/Dial Visualizations ---
+function drawGauge(containerId, categories, probs, colors, seedBase) {
+    d3.select('#' + containerId).selectAll('*').remove();
+
+    const container = document.getElementById(containerId);
+    const totalW = Math.min(container.clientWidth, 360);
+    const cx = totalW / 2;
+    const cy = totalW * 0.48;
+    const outerR = totalW * 0.38;
+    const innerR = outerR * 0.55;
+    const svgH = totalW * 0.62;
+
+    const svgEl = d3.select('#' + containerId)
         .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
-
-    const svg = svgEl.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
+        .attr('width', totalW)
+        .attr('height', svgH);
 
     const rc = rough.svg(svgEl.node());
 
-    // Synthetic probability data for 4 forecast weeks
-    const trendData = [
-        { week: 'Week 1', probs: { 'Large Increase': 0.05, 'Increase': 0.55, 'Stable': 0.30, 'Decrease': 0.08, 'Large Decrease': 0.02 }},
-        { week: 'Week 2', probs: { 'Large Increase': 0.12, 'Increase': 0.48, 'Stable': 0.25, 'Decrease': 0.10, 'Large Decrease': 0.05 }},
-        { week: 'Week 3', probs: { 'Large Increase': 0.20, 'Increase': 0.35, 'Stable': 0.22, 'Decrease': 0.15, 'Large Decrease': 0.08 }},
-        { week: 'Week 4', probs: { 'Large Increase': 0.15, 'Increase': 0.25, 'Stable': 0.30, 'Decrease': 0.20, 'Large Decrease': 0.10 }},
-    ];
+    // Draw arc segments — from π (left) to 0 (right)
+    let startAngle = Math.PI;
+    const totalProb = categories.reduce((s, c) => s + probs[c], 0);
 
-    const categories = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase'];
-    const catColors = {
-        'Large Increase': '#c0392b',
-        'Increase': '#E87D5F',
-        'Stable': '#999',
-        'Decrease': '#5ACDC5',
-        'Large Decrease': '#344D84'
-    };
+    // Find the most likely category for the needle
+    let maxProb = 0, maxCat = categories[0];
+    categories.forEach(c => { if (probs[c] > maxProb) { maxProb = probs[c]; maxCat = c; } });
 
-    const xScale = d3.scaleBand()
-        .domain(trendData.map(d => d.week))
-        .range([0, width])
-        .padding(0.3);
-
-    const yScale = d3.scaleLinear()
-        .domain([0, 1])
-        .range([height, 0]);
-
-    // Axes
-    svg.node().appendChild(rc.line(0, height, width, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 4000 }));
-
-    trendData.forEach(d => {
-        const x = xScale(d.week) + xScale.bandwidth() / 2;
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 18).attr('text-anchor', 'middle').text(d.week);
+    // Compute needle angle (weighted average)
+    let needleAngle = 0;
+    let cumAngle = Math.PI;
+    const segAngles = [];
+    categories.forEach(c => {
+        const sweep = (probs[c] / totalProb) * Math.PI;
+        const midAngle = cumAngle - sweep / 2;
+        segAngles.push({ cat: c, start: cumAngle, end: cumAngle - sweep, mid: midAngle });
+        needleAngle += probs[c] * midAngle;
+        cumAngle -= sweep;
     });
+    needleAngle /= totalProb;
 
-    // Y-axis labels
-    [0, 0.25, 0.5, 0.75, 1.0].forEach((tick, i) => {
-        const y = yScale(tick);
-        svg.node().appendChild(rc.line(-4, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 4010 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', -8).attr('y', y + 4).attr('text-anchor', 'end').text(Math.round(tick * 100) + '%');
-    });
+    // Draw each arc segment
+    segAngles.forEach((seg, i) => {
+        const steps = 20;
+        const sweepAngle = seg.start - seg.end;
+        let pathD = '';
 
-    // Stacked bars
-    trendData.forEach((d, di) => {
-        let cumY = 0;
-        categories.forEach((cat, ci) => {
-            const prob = d.probs[cat];
-            const barX = xScale(d.week);
-            const barW = xScale.bandwidth();
-            const barY = yScale(cumY + prob);
-            const barH = yScale(cumY) - barY;
+        // Outer arc
+        for (let s = 0; s <= steps; s++) {
+            const a = seg.start - (s / steps) * sweepAngle;
+            const x = cx + outerR * Math.cos(a);
+            const y = cy - outerR * Math.sin(a);
+            pathD += (s === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+        }
+        // Inner arc (reverse)
+        for (let s = steps; s >= 0; s--) {
+            const a = seg.start - (s / steps) * sweepAngle;
+            const x = cx + innerR * Math.cos(a);
+            const y = cy - innerR * Math.sin(a);
+            pathD += 'L' + x.toFixed(1) + ',' + y.toFixed(1);
+        }
+        pathD += 'Z';
 
-            svg.node().appendChild(rc.rectangle(barX, barY, barW, barH, {
-                fill: catColors[cat], fillStyle: 'solid',
-                stroke: catColors[cat], strokeWidth: 0.5,
-                roughness: 1.2, seed: 4100 + di * 10 + ci
-            }));
-
-            // Label if bar is tall enough
-            if (barH > 22) {
-                svg.append('text')
-                    .attr('x', barX + barW / 2).attr('y', barY + barH / 2 + 4)
-                    .attr('text-anchor', 'middle')
-                    .attr('class', 'tick-label')
-                    .style('fill', '#fff').style('font-size', '11px')
-                    .text(Math.round(prob * 100) + '%');
-            }
-
-            cumY += prob;
-        });
-    });
-
-    // Legend
-    const lgX = width - 130;
-    categories.slice().reverse().forEach((cat, i) => {
-        svg.node().appendChild(rc.rectangle(lgX, 4 + i * 18, 12, 12, {
-            fill: catColors[cat], fillStyle: 'solid', stroke: 'none', roughness: 0.6, seed: 4200 + i
+        svgEl.node().appendChild(rc.path(pathD, {
+            fill: colors[seg.cat], fillStyle: 'solid',
+            stroke: '#fff', strokeWidth: 2,
+            roughness: 1.0, seed: seedBase + i
         }));
-        svg.append('text').attr('class', 'legend-text').attr('x', lgX + 18).attr('y', 14 + i * 18)
-            .style('font-size', '11px').text(cat);
+
+        // Category label on outer edge
+        const labelR = outerR + 14;
+        const labelAngle = seg.mid;
+        const lx = cx + labelR * Math.cos(labelAngle);
+        const ly = cy - labelR * Math.sin(labelAngle);
+        const anchor = labelAngle > Math.PI / 2 ? 'end' : labelAngle < Math.PI / 2 ? 'start' : 'middle';
+        svgEl.append('text')
+            .attr('x', lx).attr('y', ly + 4)
+            .attr('text-anchor', anchor)
+            .style('font-family', "'Patrick Hand', cursive")
+            .style('font-size', '11px')
+            .style('fill', '#1C2442')
+            .text(seg.cat);
     });
+
+    // Draw needle
+    const needleLen = outerR * 0.92;
+    const nx = cx + needleLen * Math.cos(needleAngle);
+    const ny = cy - needleLen * Math.sin(needleAngle);
+    svgEl.node().appendChild(rc.line(cx, cy, nx, ny, {
+        stroke: '#1C2442', strokeWidth: 2.5, roughness: 0.6, seed: seedBase + 50
+    }));
+    // Needle hub
+    svgEl.node().appendChild(rc.circle(cx, cy, 12, {
+        fill: '#1C2442', fillStyle: 'solid',
+        stroke: '#1C2442', strokeWidth: 1,
+        roughness: 0.8, seed: seedBase + 51
+    }));
+
+    // Text below: predicted category + probability
+    svgEl.append('text')
+        .attr('x', cx).attr('y', cy + 20)
+        .attr('text-anchor', 'middle')
+        .style('font-family', "'Montserrat', sans-serif")
+        .style('font-size', '16px')
+        .style('font-weight', '700')
+        .style('fill', colors[maxCat])
+        .text(maxCat);
+
+    svgEl.append('text')
+        .attr('x', cx).attr('y', cy + 38)
+        .attr('text-anchor', 'middle')
+        .style('font-family', "'Lato', sans-serif")
+        .style('font-size', '13px')
+        .style('fill', '#666')
+        .text(Math.round(maxProb * 100) + '% probability');
+}
+
+function drawTrendGauge() {
+    const categories = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase'];
+    const probs = { 'Large Increase': 0.08, 'Increase': 0.52, 'Stable': 0.28, 'Decrease': 0.09, 'Large Decrease': 0.03 };
+    const colors = {
+        'Large Increase': '#c0392b', 'Increase': '#E87D5F', 'Stable': '#999',
+        'Decrease': '#5ACDC5', 'Large Decrease': '#344D84'
+    };
+    drawGauge('trend-gauge', categories, probs, colors, 5000);
+}
+
+function drawActivityGauge() {
+    const categories = ['Low', 'Medium', 'High', 'Very High'];
+    const probs = { 'Very High': 0.05, 'High': 0.35, 'Medium': 0.45, 'Low': 0.15 };
+    const colors = {
+        'Very High': '#c0392b', 'High': '#E87D5F', 'Medium': '#F2C45A', 'Low': '#5ACDC5'
+    };
+    drawGauge('activity-gauge', categories, probs, colors, 5100);
 }
 
 // --- Navigation & Controls ---
@@ -2213,10 +2177,11 @@ function redrawActiveSection(sectionId) {
         const piEnabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-interval]'))
             .map(b => parseInt(b.dataset.interval));
         drawChart(piEnabled);
-    } else if (sectionId === 'section-trajectories') {
-        drawTrajectoryChart();
     } else if (sectionId === 'section-trends') {
+        drawTrendGauge();
+        drawActivityGauge();
         drawTrendChart();
+        drawActivityChart();
     } else if (sectionId === 'section-wis') {
         const wisEnabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-wis-box-interval]'))
             .map(b => parseInt(b.dataset.wisBoxInterval));
