@@ -6,7 +6,7 @@
     <title>Epidemic Forecasting and Evaluation — Epidemium</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Lato:wght@300;400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Just+Another+Hand&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
     <style>
@@ -18,25 +18,27 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: 'Lato', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     background-color: #ffffff;
     color: #1C2442;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 /* --- Layout --- */
 .container {
-    max-width: 1200px;
+    width: 95%;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
 }
 
 h1 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 2rem;
     font-weight: 700;
     color: #1C2442;
     margin-bottom: 5px;
+    line-height: 1.3;
 }
 
 .subtitle {
@@ -47,7 +49,7 @@ h1 {
 
 .back-link {
     display: inline-block;
-    font-family: 'Lato', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
     font-weight: 600;
     color: #1E9CC5;
@@ -117,7 +119,7 @@ h1 {
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     padding: 5px 12px;
-    font-family: 'Lato', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     color: #2F4474;
@@ -150,7 +152,7 @@ h1 {
 }
 
 .sidebar-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.95rem;
     font-weight: 700;
     color: #1C2442;
@@ -179,7 +181,7 @@ h1 {
 
 .nav-heading {
     display: block;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.78rem;
     font-weight: 700;
     color: #1C2442;
@@ -188,7 +190,7 @@ h1 {
 
 .nav-subheading {
     display: block;
-    font-family: 'Lato', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.76rem;
     font-weight: 600;
     color: #2F4474;
@@ -277,7 +279,7 @@ a.nav-item:hover {
 }
 
 .description-section h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 1.2rem;
     font-weight: 600;
     color: #344D84;
@@ -286,7 +288,7 @@ a.nav-item:hover {
 
 .description-section p {
     margin-bottom: 12px;
-    line-height: 1.7;
+    line-height: 1.5;
     font-size: 0.9rem;
 }
 
@@ -312,7 +314,7 @@ a.nav-item:hover {
 }
 
 .section-heading {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
     color: #1C2442;
@@ -332,7 +334,7 @@ a.nav-item:hover {
 }
 
 .info-box {
-    background-color: #DFF8ED;
+    background-color: #E8F6EF;
     border-left: 4px solid #1E9CC5;
     padding: 15px 20px;
     margin: 20px 0;
@@ -345,7 +347,7 @@ a.nav-item:hover {
 .overview-intro {
     max-width: 800px;
     font-size: 1.05rem;
-    line-height: 1.8;
+    line-height: 1.6;
     margin-bottom: 30px;
 }
 
@@ -368,7 +370,7 @@ a.nav-item:hover {
 }
 
 .outline-card h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 1.1rem;
     font-weight: 600;
     color: #1C2442;
@@ -414,7 +416,7 @@ a.nav-item:hover {
 }
 
 .chart-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 1.1rem;
     font-weight: 600;
     color: #1C2442;
@@ -422,22 +424,25 @@ a.nav-item:hover {
 }
 
 .axis-label {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 400;
     fill: #1C2442;
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Just Another Hand', cursive;
+    text-transform: uppercase;
 }
 
 .tick-label {
-    font-family: 'Patrick Hand', cursive;
-    font-size: 12px;
+    font-family: 'Just Another Hand', cursive;
+    font-size: 14px;
     fill: #1C2442;
+    text-transform: uppercase;
 }
 
 .legend-text {
-    font-family: 'Patrick Hand', cursive;
-    font-size: 13px;
+    font-family: 'Just Another Hand', cursive;
+    font-size: 15px;
     fill: #1C2442;
+    text-transform: uppercase;
 }
 
 /* --- Controls --- */
@@ -471,7 +476,7 @@ a.nav-item:hover {
     color: #344D84;
     border-radius: 4px;
     cursor: pointer;
-    font-family: 'Lato', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
     font-weight: 600;
     transition: all 0.2s;
@@ -529,7 +534,7 @@ a.nav-item:hover {
 }
 
 .width-label {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Just Another Hand', cursive;
     font-size: 0.9rem;
     color: #344D84;
 }
@@ -538,7 +543,7 @@ a.nav-item:hover {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Just Another Hand', cursive;
     font-size: 0.95rem;
     margin: 4px 0;
 }
@@ -588,7 +593,7 @@ a.nav-item:hover {
 }
 
 .wis-score-value {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Just Another Hand', cursive;
     font-size: 1.2rem;
     font-weight: 600;
 }
@@ -604,7 +609,7 @@ a.nav-item:hover {
 .rwis-label { font-size: 0.85rem; color: #2F4474; }
 
 .rwis-value {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Just Another Hand', cursive;
     font-size: 2rem;
     font-weight: 700;
 }
@@ -630,7 +635,7 @@ a.nav-item:hover {
 
 .math-details summary {
     padding: 14px 20px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 600;
     font-size: 1rem;
     color: #344D84;
@@ -646,7 +651,7 @@ a.nav-item:hover {
 .math-body {
     padding: 20px 24px;
     font-size: 0.9rem;
-    line-height: 1.8;
+    line-height: 1.6;
 }
 
 .math-body ul {
@@ -658,7 +663,7 @@ a.nav-item:hover {
 }
 
 .math-eq {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Just Another Hand', cursive;
     font-size: 1.1rem;
     background: #f8f8f8;
     padding: 12px 16px;
@@ -889,7 +894,7 @@ a.nav-item:hover {
 
                 <div class="example" style="margin-top:24px; max-width:800px; background:#f8f8f8; padding:20px; border-radius:6px;">
                     <strong style="color:#344D84; display:block; margin-bottom:10px;">Why use categorical forecasts?</strong>
-                    <p style="font-size:0.9rem; line-height:1.7;">During periods of rapid epidemic change, exact count predictions are often unreliable. Categorical forecasts provide actionable information &mdash; "cases are likely increasing" &mdash; even when precise numbers are uncertain. They are evaluated using proper scoring rules like the <strong>Brier Score</strong> (for binary categories) or the <strong>Ranked Probability Score</strong> (for ordered categories like trend levels).</p>
+                    <p style="font-size:0.9rem; line-height:1.5;">During periods of rapid epidemic change, exact count predictions are often unreliable. Categorical forecasts provide actionable information &mdash; "cases are likely increasing" &mdash; even when precise numbers are uncertain. They are evaluated using proper scoring rules like the <strong>Brier Score</strong> (for binary categories) or the <strong>Ranked Probability Score</strong> (for ordered categories like trend levels).</p>
                 </div>
                     <div class="citation" style="margin-top:16px;">
                         Biggerstaff M, et al. (2024). Responding to the return of influenza in the United States. <em>JMIR Public Health and Surveillance</em> 10: e54340. <a href="https://doi.org/10.2196/54340" target="_blank" rel="noopener">doi:10.2196/54340</a>
@@ -1079,9 +1084,9 @@ const BASELINE_URL = 'forecast_baseline.csv';
 const COLORS = {
     observed: '#1C2442',
     forecast: '#1E9CC5',
-    pi95: '#DFF8ED',
-    pi80: '#5ACDC5',
-    pi50: '#344D84',
+    pi95: '#E8F6EF',
+    pi80: '#B9E1D9',
+    pi50: '#79CAC4',
     baseline: '#999999'
 };
 
@@ -1295,7 +1300,7 @@ function drawChart(enabledIntervals) {
     xScale.ticks(6).forEach((tick, i) => {
         const x = xScale(tick);
         svg.node().appendChild(rc.line(x, height, x, height + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick));
+        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick).toUpperCase());
     });
 
     yScale.ticks(6).forEach((tick, i) => {
@@ -1304,8 +1309,8 @@ function drawChart(enabledIntervals) {
         svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(d3.format(',')(tick));
     });
 
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('Weekly Hospitalizations');
-    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('Week');
+    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
+    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('WEEK');
 
     // PI areas
     const pis = [
@@ -1348,9 +1353,9 @@ function drawChart(enabledIntervals) {
     // Legend
     const legend = svg.append('g').attr('transform', `translate(${width - 150}, 20)`);
     legend.node().appendChild(rc.circle(15, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 1, seed: 99 }));
-    legend.append('text').attr('class', 'legend-text').attr('x', 25).attr('y', 4).text('Observed');
+    legend.append('text').attr('class', 'legend-text').attr('x', 25).attr('y', 4).text('OBSERVED');
     legend.node().appendChild(rc.line(0, 20, 30, 20, { stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 1.2, seed: 100 }));
-    legend.append('text').attr('class', 'legend-text').attr('x', 35).attr('y', 24).text('Forecast');
+    legend.append('text').attr('class', 'legend-text').attr('x', 35).attr('y', 24).text('FORECAST');
 }
 
 function setupControls() {
@@ -1401,7 +1406,7 @@ function drawBoxChart(enabledIntervals) {
     xScale.ticks(6).forEach((tick, i) => {
         const x = xScale(tick);
         svg.node().appendChild(rc.line(x, height, x, height + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick));
+        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick).toUpperCase());
     });
 
     yScale.ticks(6).forEach((tick, i) => {
@@ -1410,8 +1415,8 @@ function drawBoxChart(enabledIntervals) {
         svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(d3.format(',')(tick));
     });
 
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('Weekly Hospitalizations');
-    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('Week');
+    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
+    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('WEEK');
 
     // Band half-width
     const dateSpan = forecast.length > 1 ? xScale(forecast[1].date) - xScale(forecast[0].date) : 60;
@@ -1469,11 +1474,11 @@ function drawBoxChart(enabledIntervals) {
     // Legend
     const lg = svg.append('g').attr('transform', `translate(${width - 200}, 10)`);
     lg.node().appendChild(rc.circle(8, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 0.8, seed: 570 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('Observed');
+    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('OBSERVED');
     lg.node().appendChild(rc.circle(8, 18, 8, { fill: 'white', fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 2, roughness: 0.8, seed: 571 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 22).text('Out-of-sample');
+    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 22).text('OUT-OF-SAMPLE');
     lg.node().appendChild(rc.line(0, 36, 16, 36, { stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 0.8, seed: 572 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 40).text('Forecast median');
+    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 40).text('FORECAST MEDIAN');
 }
 
 function setupWISBoxControls() {
@@ -1522,7 +1527,7 @@ function renderObservedDot(svg, rc, xScale, obsVal, centerY, allQ, enabledPIs) {
         .attr('x', obsX).attr('y', centerY - 50)
         .attr('text-anchor', 'middle')
         .style('font-weight', '700').style('font-size', '13px')
-        .text('Observed: ' + d3.format(',')(Math.round(obsVal)));
+        .text('OBSERVED: ' + d3.format(',')(Math.round(obsVal)));
 
     updateBPCoverage(allQ, obsVal, enabledPIs);
     const activePairs = enabledPIs.flatMap(level => PI_TO_PAIRS[level] || []);
@@ -1566,7 +1571,7 @@ function drawBoxplot(obsVal, widthFactor, enabledPIs) {
         svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', H + 20).attr('text-anchor', 'middle').text(d3.format(',')(tick));
     });
 
-    svg.append('text').attr('class', 'axis-label').attr('x', W / 2).attr('y', H + 38).attr('text-anchor', 'middle').text('Weekly Hospitalizations');
+    svg.append('text').attr('class', 'axis-label').attr('x', W / 2).attr('y', H + 38).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
 
     const piDefs = [
         { level: 95, lower: '0.025', upper: '0.975', color: COLORS.pi95, barH: 60 },
@@ -1588,7 +1593,8 @@ function drawBoxplot(obsVal, widthFactor, enabledPIs) {
         svg.append('text').attr('class', 'legend-text')
             .attr('x', (x1 + x2) / 2).attr('y', centerY - pi.barH / 2 - 4)
             .attr('text-anchor', 'middle').style('font-size', '11px')
-            .text(pi.level + '% PI');
+            .text(pi.level + '% PI')
+            .style('text-transform', 'uppercase');
     });
 
     // Median line — drawn AFTER PI bars so it renders on top
@@ -1601,11 +1607,11 @@ function drawBoxplot(obsVal, widthFactor, enabledPIs) {
 
     // Annotation
     let annotation = '';
-    if (widthFactor < 0.5) annotation = 'Too sharp! Observations fall outside \u2014 large penalty';
-    else if (widthFactor < 0.8) annotation = 'Sharper intervals, but some coverage misses';
-    else if (widthFactor <= 1.3) annotation = 'Good balance of sharpness and calibration';
-    else if (widthFactor <= 2.0) annotation = 'Wide intervals \u2014 high dispersion penalty';
-    else annotation = 'Very wide \u2014 safe coverage but poor sharpness';
+    if (widthFactor < 0.5) annotation = 'TOO SHARP! OBSERVATIONS FALL OUTSIDE \u2014 LARGE PENALTY';
+    else if (widthFactor < 0.8) annotation = 'SHARPER INTERVALS, BUT SOME COVERAGE MISSES';
+    else if (widthFactor <= 1.3) annotation = 'GOOD BALANCE OF SHARPNESS AND CALIBRATION';
+    else if (widthFactor <= 2.0) annotation = 'WIDE INTERVALS \u2014 HIGH DISPERSION PENALTY';
+    else annotation = 'VERY WIDE \u2014 SAFE COVERAGE BUT POOR SHARPNESS';
 
     svg.append('text').attr('class', 'tick-label')
         .attr('x', W / 2).attr('y', -8)
@@ -1709,8 +1715,8 @@ function drawWISDecomp(wis) {
             svgBar.append('text').attr('x', x + w / 2).attr('y', barH + 16)
                 .attr('text-anchor', 'middle')
                 .style('font-size', '10px').style('fill', '#1C2442')
-                .style('font-family', "'Patrick Hand', cursive")
-                .text(p.label);
+                .style('font-family', "'Just Another Hand', cursive")
+                .text(p.label.toUpperCase());
         }
         x += w;
     });
@@ -1754,7 +1760,7 @@ function drawRWISChart() {
     xScale.ticks(6).forEach((tick, i) => {
         const x = xScale(tick);
         svg.node().appendChild(rc.line(x, height, x, height + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick));
+        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick).toUpperCase());
     });
 
     yScale.ticks(6).forEach((tick, i) => {
@@ -1763,8 +1769,8 @@ function drawRWISChart() {
         svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(d3.format(',')(tick));
     });
 
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('Weekly Hospitalizations');
-    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('Week');
+    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
+    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('WEEK');
 
     // Band half-width
     const dateSpan = forecast.length > 1 ? xScale(forecast[1].date) - xScale(forecast[0].date) : 60;
@@ -1864,13 +1870,13 @@ function drawRWISChart() {
     // Legend
     const lg = svg.append('g').attr('transform', `translate(${width - 200}, 10)`);
     lg.node().appendChild(rc.circle(8, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 0.8, seed: 2700 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('Observed');
+    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('OBSERVED');
     lg.node().appendChild(rc.circle(8, 16, 8, { fill: 'white', fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 2, roughness: 0.8, seed: 2703 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 20).text('Out-of-sample');
+    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 20).text('OUT-OF-SAMPLE');
     lg.node().appendChild(rc.rectangle(0, 28, 16, 10, { fill: COLORS.pi80, fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 2701 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 38).text('Model');
+    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 38).text('MODEL');
     lg.node().appendChild(rc.rectangle(0, 44, 16, 10, { fill: COLORS.baseline, fillStyle: 'hachure', fillWeight: 1.5, hachureGap: 4, stroke: COLORS.baseline, roughness: 0.8, seed: 2702 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 54).text('Baseline');
+    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 54).text('BASELINE');
 
     // --- Compute real WIS ---
     const baselineByDateMap = {};
@@ -1957,13 +1963,13 @@ function drawHorizontalBarChart(containerId, categories, probs, colors, seedBase
         svg.append('text').attr('class', 'tick-label')
             .attr('x', -8).attr('y', y + barHeight / 2 + 4)
             .attr('text-anchor', 'end')
-            .style('font-size', '13px')
-            .text(cat);
+            .style('font-size', '15px')
+            .text(cat.toUpperCase());
 
         // Percentage label (right of bar)
         svg.append('text').attr('class', 'tick-label')
             .attr('x', barW + 8).attr('y', y + barHeight / 2 + 4)
-            .style('font-size', '13px').style('font-weight', '600')
+            .style('font-size', '15px').style('font-weight', '600')
             .text(Math.round(prob * 100) + '%');
     });
 }
@@ -1972,8 +1978,8 @@ function drawTrendChart() {
     const categories = ['Large Increase', 'Increase', 'Stable', 'Decrease', 'Large Decrease'];
     const probs = { 'Large Increase': 0.08, 'Increase': 0.52, 'Stable': 0.28, 'Decrease': 0.09, 'Large Decrease': 0.03 };
     const colors = {
-        'Large Increase': '#c0392b', 'Increase': '#E87D5F', 'Stable': '#999',
-        'Decrease': '#5ACDC5', 'Large Decrease': '#344D84'
+        'Large Increase': '#E8A56D', 'Increase': '#EFDA86', 'Stable': '#D1E5B7',
+        'Decrease': '#9CD3B4', 'Large Decrease': '#75BFBD'
     };
     drawHorizontalBarChart('trend-chart', categories, probs, colors, 4000);
 }
@@ -1982,7 +1988,7 @@ function drawActivityChart() {
     const categories = ['Very High', 'High', 'Medium', 'Low'];
     const probs = { 'Very High': 0.05, 'High': 0.35, 'Medium': 0.45, 'Low': 0.15 };
     const colors = {
-        'Very High': '#c0392b', 'High': '#E87D5F', 'Medium': '#F2C45A', 'Low': '#5ACDC5'
+        'Very High': '#4D6891', 'High': '#4B9AC1', 'Medium': '#9CD8D3', 'Low': '#E4F7EE'
     };
     drawHorizontalBarChart('activity-chart', categories, probs, colors, 4100);
 }
@@ -2064,10 +2070,10 @@ function drawGauge(containerId, categories, probs, colors, seedBase) {
         svgEl.append('text')
             .attr('x', lx).attr('y', ly + 4)
             .attr('text-anchor', anchor)
-            .style('font-family', "'Patrick Hand', cursive")
-            .style('font-size', '11px')
+            .style('font-family', "'Just Another Hand', cursive")
+            .style('font-size', '14px')
             .style('fill', '#1C2442')
-            .text(seg.cat);
+            .text(seg.cat.toUpperCase());
     });
 
     // Draw needle
@@ -2088,27 +2094,27 @@ function drawGauge(containerId, categories, probs, colors, seedBase) {
     svgEl.append('text')
         .attr('x', cx).attr('y', cy + 20)
         .attr('text-anchor', 'middle')
-        .style('font-family', "'Montserrat', sans-serif")
+        .style('font-family', "'DM Sans', sans-serif")
         .style('font-size', '16px')
         .style('font-weight', '700')
         .style('fill', colors[maxCat])
-        .text(maxCat);
+        .text(maxCat.toUpperCase());
 
     svgEl.append('text')
         .attr('x', cx).attr('y', cy + 38)
         .attr('text-anchor', 'middle')
-        .style('font-family', "'Lato', sans-serif")
-        .style('font-size', '13px')
+        .style('font-family', "'Just Another Hand', cursive")
+        .style('font-size', '18px')
         .style('fill', '#666')
-        .text(Math.round(maxProb * 100) + '% probability');
+        .text((Math.round(maxProb * 100) + '% PROBABILITY'));
 }
 
 function drawTrendGauge() {
     const categories = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase'];
     const probs = { 'Large Increase': 0.08, 'Increase': 0.52, 'Stable': 0.28, 'Decrease': 0.09, 'Large Decrease': 0.03 };
     const colors = {
-        'Large Increase': '#c0392b', 'Increase': '#E87D5F', 'Stable': '#999',
-        'Decrease': '#5ACDC5', 'Large Decrease': '#344D84'
+        'Large Increase': '#E8A56D', 'Increase': '#EFDA86', 'Stable': '#D1E5B7',
+        'Decrease': '#9CD3B4', 'Large Decrease': '#75BFBD'
     };
     drawGauge('trend-gauge', categories, probs, colors, 5000);
 }
@@ -2117,7 +2123,7 @@ function drawActivityGauge() {
     const categories = ['Low', 'Medium', 'High', 'Very High'];
     const probs = { 'Very High': 0.05, 'High': 0.35, 'Medium': 0.45, 'Low': 0.15 };
     const colors = {
-        'Very High': '#c0392b', 'High': '#E87D5F', 'Medium': '#F2C45A', 'Low': '#5ACDC5'
+        'Very High': '#4D6891', 'High': '#4B9AC1', 'Medium': '#9CD8D3', 'Low': '#E4F7EE'
     };
     drawGauge('activity-gauge', categories, probs, colors, 5100);
 }
