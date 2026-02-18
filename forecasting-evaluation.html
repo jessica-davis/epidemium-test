@@ -96,7 +96,7 @@
                         <ul>
                             <li><a data-section="section-wis">Weighted Interval Score</a> &mdash; Scoring prediction intervals</li>
                             <li><a data-section="section-coverage">Coverage</a> &mdash; Do observations land inside the intervals?</li>
-                            <li><a data-section="section-brier">Brier Score</a> &mdash; Scoring binary outcomes</li>
+                            <li><a data-section="section-brier">Brier Score</a> &mdash; Scoring categorical forecasts</li>
                             <li><span class="coming-soon-text">Ranked Probability Score &mdash; Coming soon</span></li>
                         </ul>
                     </div>
@@ -189,7 +189,7 @@
                         <h3>Evaluating Categorical Forecasts</h3>
                         <p>How do we measure whether a categorical forecast is any good? We use <strong>proper scoring rules</strong> that reward both accuracy and well-calibrated probabilities:</p>
                         <ul style="list-style:none; padding:0; margin-top:12px;">
-                            <li style="margin-bottom:10px;"><a data-section="section-brier" style="padding:6px 0; border:none; font-size:0.88rem; cursor:pointer;"><strong>Brier Score</strong> &mdash; scoring binary outcomes</a></li>
+                            <li style="margin-bottom:10px;"><a data-section="section-brier" style="padding:6px 0; border:none; font-size:0.88rem; cursor:pointer;"><strong>Brier Score</strong> &mdash; scoring categorical forecasts</a></li>
                             <li><span class="nav-item disabled" style="padding:6px 0; border:none; font-size:0.88rem;"><strong>Ranked Probability Score</strong> &mdash; scoring ordered categories <span class="badge-soon">Coming soon</span></span></li>
                         </ul>
                     </div>
@@ -511,7 +511,7 @@
                         <p style="margin-top:10px;">The <strong>average Brier Score</strong> across a season summarizes overall model quality. Lower is better.</p>
                         <p style="margin-top:10px;">We compare against a <strong>uniform baseline</strong> that always assigns equal probability (20%) to each of the five categories. For a uniform forecast, BS&nbsp;=&nbsp;0.80 regardless of the outcome. If the model&rsquo;s average BS is lower, it adds value beyond na&iuml;ve guessing.</p>
                         <div class="example" style="margin-top:14px;">
-                            <strong>Reading the chart:</strong> Bar height shows the Brier Score for each week. <span style="color:#79CAC4; font-weight:600;">Teal</span> bars have BS&nbsp;&lt;&nbsp;0.50 (good forecasts), <span style="color:#E8A56D; font-weight:600;">tan</span> bars have BS&nbsp;&ge;&nbsp;0.50 (poor forecasts). Colored dots above each bar indicate the observed trend category for that week.
+                            <strong>Reading the chart:</strong> The top panel shows each week&rsquo;s forecast as a stacked bar &mdash; taller segments indicate higher predicted probability. White dots mark the observed outcome. The bottom panel shows the resulting Brier Score: <span style="color:#79CAC4; font-weight:600;">teal</span>&nbsp;=&nbsp;BS&nbsp;&lt;&nbsp;0.50 (good), <span style="color:#E8A56D; font-weight:600;">tan</span>&nbsp;=&nbsp;BS&nbsp;&ge;&nbsp;0.50 (poor). The dashed line is the uniform baseline (BS&nbsp;=&nbsp;0.80).
                         </div>
                     </div>
                 </div>

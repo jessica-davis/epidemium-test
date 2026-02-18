@@ -2,8 +2,11 @@
    Charts: Brier Score (Multi-Category)
    ============================================================ */
 
-// Categories in display order (top-to-bottom for bar charts)
+// Categories in display order (top-to-bottom for explorer bars)
 const BRIER_CATEGORIES = ['Large Increase', 'Increase', 'Stable', 'Decrease', 'Large Decrease'];
+
+// Stack order for stacked bar chart (bottom-to-top)
+const BRIER_STACK_ORDER = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase'];
 
 const BRIER_CAT_COLORS = {
     'Large Increase': '#E8A56D', 'Increase': '#EFDA86', 'Stable': '#D1E5B7',
@@ -129,7 +132,6 @@ function updateBrierCalcDisplay() {
     const rows = BRIER_CATEGORIES.map(cat => {
         const p = BRIER_EXAMPLE_PMF[cat];
         const o = cat === brierObservedCat ? 1 : 0;
-        const val = (p - o) * (p - o);
         const isObs = cat === brierObservedCat;
         const color = isObs ? '#1C2442' : '#888';
         const weight = isObs ? 'font-weight:700;' : '';
@@ -147,113 +149,171 @@ function updateBrierCalcDisplay() {
         </div>`;
 }
 
-// --- Part 2: Season-Long Evaluation ---
+// --- Part 2: Season-Long Evaluation (two-panel chart) ---
 function drawSeasonBrierChart() {
     d3.select('#brier-season-chart').selectAll('*').remove();
 
     const container = document.getElementById('brier-season-chart');
-    const margin = { top: 30, right: 30, bottom: 70, left: 60 };
-    const width = container.clientWidth - margin.left - margin.right;
-    const height = 360 - margin.top - margin.bottom;
+    const margin = { top: 10, right: 30, bottom: 55, left: 55 };
+    const totalWidth = container.clientWidth;
+    const width = totalWidth - margin.left - margin.right;
+
+    // Panel dimensions
+    const pmfHeight = 210;
+    const gapH = 30;
+    const bsHeight = 90;
+    const totalHeight = margin.top + pmfHeight + gapH + bsHeight + margin.bottom;
 
     const svgEl = d3.select('#brier-season-chart')
         .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
-
-    const svg = svgEl.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
+        .attr('width', totalWidth)
+        .attr('height', totalHeight);
 
     const rc = rough.svg(svgEl.node());
 
-    const xScale = d3.scaleBand().domain(BRIER_DATA.map(d => d.week)).range([0, width]).padding(0.25);
-    const yScale = d3.scaleLinear().domain([0, 1.1]).range([height, 0]);
+    // Shared x-scale
+    const xScale = d3.scaleBand().domain(BRIER_DATA.map(d => d.week)).range([0, width]).padding(0.12);
+    const bw = xScale.bandwidth();
+
+    // ========== Top Panel: Stacked PMF Bars ==========
+    const pmfG = svgEl.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const yPMF = d3.scaleLinear().domain([0, 1]).range([pmfHeight, 0]);
 
     // Axes
-    svg.node().appendChild(rc.line(0, height, width, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 8200 }));
-    svg.node().appendChild(rc.line(0, 0, 0, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 8201 }));
-
-    // X-axis labels
-    BRIER_DATA.forEach((d, i) => {
-        const x = xScale(d.week) + xScale.bandwidth() / 2;
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 18)
-            .attr('text-anchor', 'middle').style('font-size', '11px')
-            .attr('transform', `rotate(-35, ${x}, ${height + 18})`)
-            .text(d.week.toUpperCase());
-    });
+    pmfG.node().appendChild(rc.line(0, pmfHeight, width, pmfHeight, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 8200 }));
+    pmfG.node().appendChild(rc.line(0, 0, 0, pmfHeight, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 8201 }));
 
     // Y-axis ticks
-    [0, 0.25, 0.50, 0.75, 1.0].forEach((tick, i) => {
-        const y = yScale(tick);
-        svg.node().appendChild(rc.line(-6, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 8220 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(tick.toFixed(2));
+    [0, 0.2, 0.4, 0.6, 0.8, 1.0].forEach((tick, i) => {
+        const y = yPMF(tick);
+        pmfG.node().appendChild(rc.line(-6, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 8210 + i }));
+        pmfG.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(Math.round(tick * 100) + '%');
     });
 
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -45).attr('x', -height / 2).attr('text-anchor', 'middle').text('BRIER SCORE');
+    pmfG.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -40).attr('x', -pmfHeight / 2).attr('text-anchor', 'middle').text('FORECAST PROBABILITY');
+
+    // Draw stacked bars
+    BRIER_DATA.forEach((d, i) => {
+        let cumProb = 0;
+        const x = xScale(d.week);
+
+        BRIER_STACK_ORDER.forEach((cat, ci) => {
+            const prob = d.pmf[cat];
+            const y0 = cumProb;
+            const y1 = cumProb + prob;
+            cumProb = y1;
+
+            const rectTop = yPMF(y1);
+            const rectH = yPMF(y0) - yPMF(y1);
+
+            if (rectH > 0.5) {
+                const isObserved = cat === d.observed;
+                pmfG.node().appendChild(rc.rectangle(x, rectTop, bw, rectH, {
+                    fill: BRIER_CAT_COLORS[cat], fillStyle: 'solid',
+                    stroke: isObserved ? '#1C2442' : 'rgba(255,255,255,0.6)',
+                    strokeWidth: isObserved ? 2 : 0.5,
+                    roughness: 0.7, seed: 8300 + i * 10 + ci
+                }));
+            }
+        });
+
+        // Observed marker: white dot at center of observed segment
+        let obsCumBottom = 0;
+        for (const cat of BRIER_STACK_ORDER) {
+            if (cat === d.observed) break;
+            obsCumBottom += d.pmf[cat];
+        }
+        const obsMid = obsCumBottom + d.pmf[d.observed] / 2;
+
+        pmfG.node().appendChild(rc.circle(x + bw / 2, yPMF(obsMid), 9, {
+            fill: 'white', fillStyle: 'solid',
+            stroke: '#1C2442', strokeWidth: 2,
+            roughness: 0.8, seed: 8500 + i
+        }));
+    });
+
+    // Category legend (top-right of PMF panel)
+    const lg = pmfG.append('g').attr('transform', `translate(${width - 135}, 6)`);
+    // Reverse stack order so legend reads top-to-bottom matching visual
+    BRIER_STACK_ORDER.slice().reverse().forEach((cat, i) => {
+        lg.node().appendChild(rc.rectangle(0, i * 14, 12, 10, {
+            fill: BRIER_CAT_COLORS[cat], fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 8800 + i
+        }));
+        lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', i * 14 + 9)
+            .style('font-size', '10px').text(cat.toUpperCase());
+    });
+
+    const obsLegY = BRIER_STACK_ORDER.length * 14 + 4;
+    lg.node().appendChild(rc.circle(6, obsLegY + 3, 8, {
+        fill: 'white', fillStyle: 'solid', stroke: '#1C2442', strokeWidth: 2, roughness: 0.8, seed: 8810
+    }));
+    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', obsLegY + 7)
+        .style('font-size', '10px').text('OBSERVED');
+
+    // ========== Bottom Panel: BS Score Bars ==========
+    const bsG = svgEl.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top + pmfHeight + gapH})`);
+
+    const yBS = d3.scaleLinear().domain([0, 1.05]).range([bsHeight, 0]);
+
+    // Axes
+    bsG.node().appendChild(rc.line(0, bsHeight, width, bsHeight, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 8600 }));
+    bsG.node().appendChild(rc.line(0, 0, 0, bsHeight, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 8601 }));
+
+    // Y-axis ticks
+    [0, 0.5, 1.0].forEach((tick, i) => {
+        const y = yBS(tick);
+        bsG.node().appendChild(rc.line(-6, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 8610 + i }));
+        bsG.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(tick.toFixed(1));
+    });
+
+    bsG.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -40).attr('x', -bsHeight / 2).attr('text-anchor', 'middle').text('BRIER SCORE');
 
     // Baseline reference line (uniform PMF → BS = 0.80)
-    const baselineBS = computeMultiBrier(BRIER_BASELINE_PMF, 'Increase'); // 0.80 for any outcome
-    svg.node().appendChild(rc.line(0, yScale(baselineBS), width, yScale(baselineBS), {
-        stroke: '#bbb', strokeWidth: 1.5, roughness: 0.6, strokeLineDash: [6, 4], seed: 8250
+    const baselineBS = 0.80;
+    bsG.node().appendChild(rc.line(0, yBS(baselineBS), width, yBS(baselineBS), {
+        stroke: '#bbb', strokeWidth: 1.5, roughness: 0.6, strokeLineDash: [6, 4], seed: 8650
     }));
-    svg.append('text')
-        .attr('x', width - 4).attr('y', yScale(baselineBS) - 6)
+    bsG.append('text')
+        .attr('x', width - 4).attr('y', yBS(baselineBS) - 5)
         .attr('text-anchor', 'end')
         .style('font-family', "'Just Another Hand', cursive")
-        .style('font-size', '14px').style('fill', '#999')
-        .text('BASELINE (UNIFORM)');
+        .style('font-size', '12px').style('fill', '#999')
+        .text('BASELINE');
 
-    // Draw bars
+    // BS score bars
     BRIER_DATA.forEach((d, i) => {
         const bs = computeMultiBrier(d.pmf, d.observed);
         const barColor = bs < 0.50 ? '#79CAC4' : '#E8A56D';
         const x = xScale(d.week);
-        const barTop = yScale(bs);
-        const barH = height - barTop;
+        const barTop = yBS(Math.min(bs, 1.05));
+        const barH = bsHeight - barTop;
 
-        svg.node().appendChild(rc.rectangle(x, barTop, xScale.bandwidth(), barH, {
+        bsG.node().appendChild(rc.rectangle(x, barTop, bw, barH, {
             fill: barColor, fillStyle: 'solid', stroke: barColor, strokeWidth: 0.5,
-            roughness: 1.2, seed: 8300 + i
+            roughness: 1.0, seed: 8700 + i
         }));
-
-        // Observed category dot above bar
-        const dotY = barTop - 14;
-        const dotColor = BRIER_CAT_COLORS[d.observed];
-        svg.node().appendChild(rc.circle(x + xScale.bandwidth() / 2, dotY, 10, {
-            fill: dotColor, fillStyle: 'solid', stroke: '#1C2442', strokeWidth: 1,
-            roughness: 0.8, seed: 8350 + i
-        }));
-
-        // BS value label
-        if (barH > 25) {
-            svg.append('text').attr('class', 'tick-label')
-                .attr('x', x + xScale.bandwidth() / 2).attr('y', barTop + 16)
-                .attr('text-anchor', 'middle')
-                .style('font-size', '10px').style('fill', 'white')
-                .text(bs.toFixed(2));
-        }
     });
 
-    // Legend
-    const lg = svg.append('g').attr('transform', `translate(${width - 190}, 0)`);
-    lg.node().appendChild(rc.rectangle(0, 0, 14, 10, { fill: '#79CAC4', fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 8400 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 20).attr('y', 10).text('BS < 0.50');
-    lg.node().appendChild(rc.rectangle(0, 16, 14, 10, { fill: '#E8A56D', fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 8401 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 20).attr('y', 26).text('BS \u2265 0.50');
+    // BS legend (inline in bottom panel)
+    const lg2 = bsG.append('g').attr('transform', `translate(${width - 120}, 2)`);
+    lg2.node().appendChild(rc.rectangle(0, 0, 10, 8, { fill: '#79CAC4', fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 8900 }));
+    lg2.append('text').attr('class', 'legend-text').attr('x', 14).attr('y', 8).style('font-size', '10px').text('BS < 0.50');
+    lg2.node().appendChild(rc.rectangle(0, 13, 10, 8, { fill: '#E8A56D', fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 8901 }));
+    lg2.append('text').attr('class', 'legend-text').attr('x', 14).attr('y', 21).style('font-size', '10px').text('BS \u2265 0.50');
 
-    // Category dot legend
-    lg.append('text').attr('class', 'legend-text').attr('x', 0).attr('y', 44).style('font-weight', '600').text('OBSERVED:');
-    const observedCats = [...new Set(BRIER_DATA.map(d => d.observed))];
-    // Show in standard order
-    let dotY = 54;
-    BRIER_CATEGORIES.forEach((cat, ci) => {
-        if (!observedCats.includes(cat)) return;
-        lg.node().appendChild(rc.circle(7, dotY + 2, 8, {
-            fill: BRIER_CAT_COLORS[cat], fillStyle: 'solid', stroke: '#1C2442', strokeWidth: 1,
-            roughness: 0.8, seed: 8410 + ci
-        }));
-        lg.append('text').attr('class', 'legend-text').attr('x', 16).attr('y', dotY + 6).text(cat.toUpperCase());
-        dotY += 14;
+    // ========== Shared X-axis Labels ==========
+    const labelG = svgEl.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top + pmfHeight + gapH + bsHeight})`);
+
+    BRIER_DATA.forEach((d, i) => {
+        const x = xScale(d.week) + bw / 2;
+        labelG.append('text').attr('class', 'tick-label').attr('x', x).attr('y', 16)
+            .attr('text-anchor', 'middle').style('font-size', '11px')
+            .attr('transform', `rotate(-35, ${x}, 16)`)
+            .text(d.week.toUpperCase());
     });
 
     updateBrierSeasonResults();
