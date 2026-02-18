@@ -7,738 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Just+Another+Hand&display=swap" rel="stylesheet">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
-    <style>
-/* ============================================================
-   STYLES
-   ============================================================ */
-
-/* --- Base / Reset --- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    font-family: 'DM Sans', sans-serif;
-    background-color: #ffffff;
-    color: #1C2442;
-    line-height: 1.5;
-}
-
-/* --- Layout --- */
-.container {
-    width: 95%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-h1 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1C2442;
-    margin-bottom: 5px;
-    line-height: 1.3;
-}
-
-.subtitle {
-    font-size: 1rem;
-    color: #2F4474;
-    margin-bottom: 20px;
-}
-
-.back-link {
-    display: inline-block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #1E9CC5;
-    text-decoration: none;
-    margin-bottom: 16px;
-}
-
-.back-link:hover { text-decoration: underline; }
-
-.loading {
-    text-align: center;
-    padding: 40px;
-    font-size: 1.1rem;
-    color: #1E9CC5;
-}
-
-.error {
-    background-color: #fee;
-    border-left: 4px solid #c00;
-    padding: 15px 20px;
-    margin: 20px 0;
-    border-radius: 4px;
-    color: #c00;
-}
-
-/* --- Sidebar Navigation --- */
-.app-layout {
-    display: flex;
-    gap: 0;
-}
-
-.sidebar {
-    width: 280px;
-    flex-shrink: 0;
-    border-right: 1px solid #e0e0e0;
-    padding: 8px 0;
-    transition: width 0.25s ease, opacity 0.25s ease;
-    overflow: hidden;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
-    max-height: 100vh;
-    overflow-y: auto;
-}
-
-.sidebar.collapsed {
-    width: 0;
-    border-right: none;
-    padding: 0;
-}
-
-.sidebar.collapsed .sidebar-inner {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.sidebar-inner {
-    width: 280px;
-    transition: opacity 0.2s ease;
-}
-
-.sidebar-toggle {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 5px 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #2F4474;
-    cursor: pointer;
-    margin-bottom: 12px;
-    transition: all 0.2s;
-}
-
-.sidebar-toggle:hover {
-    border-color: #1E9CC5;
-    color: #1E9CC5;
-}
-
-.sidebar-toggle .arrow {
-    display: inline-block;
-    transition: transform 0.2s;
-}
-
-.sidebar-toggle.closed .arrow {
-    transform: rotate(180deg);
-}
-
-.sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 16px 12px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 8px;
-}
-
-.sidebar-title {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #1C2442;
-}
-
-.main-content {
-    flex: 1;
-    min-width: 0;
-    padding-left: 24px;
-    transition: padding-left 0.25s ease;
-}
-
-.sidebar.collapsed + .main-content {
-    padding-left: 0;
-}
-
-.nav-outline {
-    list-style: none;
-    padding: 0 16px;
-}
-
-.nav-outline ul {
-    list-style: none;
-    padding-left: 16px;
-}
-
-.nav-heading {
-    display: block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #1C2442;
-    padding: 14px 8px 4px;
-}
-
-.nav-subheading {
-    display: block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.76rem;
-    font-weight: 600;
-    color: #2F4474;
-    padding: 8px 8px 2px;
-}
-
-.nav-item {
-    display: block;
-    padding: 6px 12px;
-    font-size: 0.84rem;
-    color: #2F4474;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.15s;
-    text-decoration: none;
-    border-left: 3px solid transparent;
-}
-
-a.nav-item:hover {
-    color: #1E9CC5;
-    background: #f8f8f8;
-}
-
-.nav-item.active {
-    color: #1C2442;
-    font-weight: 600;
-    border-left-color: #1E9CC5;
-    background: #f0f8ff;
-}
-
-.nav-item.disabled {
-    color: #bbb;
-    cursor: default;
-    font-size: 0.8rem;
-}
-
-.badge-soon {
-    display: inline-block;
-    font-size: 0.58rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #f0f0f0;
-    color: #aaa;
-    padding: 1px 5px;
-    border-radius: 3px;
-    margin-left: 4px;
-    vertical-align: middle;
-}
-
-.mobile-menu-btn {
-    display: none;
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 5px 10px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: #1C2442;
-    line-height: 1;
-    margin-bottom: 10px;
-}
-
-/* --- Content Sections --- */
-.content-section {
-    display: none;
-}
-
-.content-section.active {
-    display: block;
-}
-
-.content-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 30px;
-    align-items: start;
-}
-
-.chart-section { width: 100%; }
-
-.description-section {
-    padding: 20px;
-    background-color: #F2F2F2;
-    border-radius: 8px;
-}
-
-.description-section h3 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #344D84;
-    margin-bottom: 12px;
-}
-
-.description-section p {
-    margin-bottom: 12px;
-    line-height: 1.5;
-    font-size: 0.9rem;
-}
-
-.description-section .definition {
-    font-style: italic;
-    color: #2F4474;
-    margin-bottom: 25px;
-    padding-left: 15px;
-    border-left: 3px solid #1E9CC5;
-}
-
-.description-section .example {
-    background-color: white;
-    padding: 20px;
-    border-radius: 6px;
-    margin-top: 20px;
-}
-
-.description-section .example strong {
-    color: #344D84;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.section-heading {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1C2442;
-    margin-bottom: 5px;
-}
-
-.section-sub {
-    font-size: 0.95rem;
-    color: #2F4474;
-    margin-bottom: 20px;
-}
-
-.section-divider {
-    border: none;
-    border-top: 1px dashed #ddd;
-    margin: 30px 0;
-}
-
-.info-box {
-    background-color: #E8F6EF;
-    border-left: 4px solid #1E9CC5;
-    padding: 15px 20px;
-    margin: 20px 0;
-    border-radius: 4px;
-}
-
-.info-box p { margin: 5px 0; }
-
-/* --- Overview Section --- */
-.overview-intro {
-    max-width: 800px;
-    font-size: 1.05rem;
-    line-height: 1.6;
-    margin-bottom: 30px;
-}
-
-.overview-intro p {
-    margin-bottom: 16px;
-}
-
-.overview-outline {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 20px;
-}
-
-.outline-card {
-    background: #f8f8f8;
-    border-radius: 8px;
-    padding: 24px;
-    border-left: 4px solid #1E9CC5;
-}
-
-.outline-card h3 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1C2442;
-    margin-bottom: 8px;
-}
-
-.outline-card p {
-    font-size: 0.9rem;
-    color: #2F4474;
-    margin-bottom: 12px;
-}
-
-.outline-card ul {
-    list-style: none;
-    padding: 0;
-}
-
-.outline-card li {
-    padding: 4px 0;
-    font-size: 0.88rem;
-}
-
-.outline-card a {
-    color: #1E9CC5;
-    text-decoration: none;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.outline-card a:hover { text-decoration: underline; }
-
-.outline-card .coming-soon-text {
-    color: #bbb;
-    font-style: italic;
-}
-
-/* --- Charts --- */
-.chart-container {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.chart-title {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1C2442;
-    margin-bottom: 10px;
-}
-
-.axis-label {
-    font-size: 16px;
-    font-weight: 400;
-    fill: #1C2442;
-    font-family: 'Just Another Hand', cursive;
-    text-transform: uppercase;
-}
-
-.tick-label {
-    font-family: 'Just Another Hand', cursive;
-    font-size: 14px;
-    fill: #1C2442;
-    text-transform: uppercase;
-}
-
-.legend-text {
-    font-family: 'Just Another Hand', cursive;
-    font-size: 15px;
-    fill: #1C2442;
-    text-transform: uppercase;
-}
-
-/* --- Controls --- */
-.controls {
-    margin-bottom: 15px;
-    padding: 12px 16px;
-    background-color: #F2F2F2;
-    border-radius: 6px;
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.controls label {
-    font-weight: 600;
-    color: #1C2442;
-    margin-right: 10px;
-}
-
-.control-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.toggle-btn {
-    padding: 8px 16px;
-    border: 2px solid #344D84;
-    background-color: white;
-    color: #344D84;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.toggle-btn.active {
-    background-color: #344D84;
-    color: white;
-}
-
-.toggle-btn:hover {
-    background-color: #1E9CC5;
-    border-color: #1E9CC5;
-    color: white;
-}
-
-/* --- Boxplot --- */
-.boxplot-container {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.boxplot-controls {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 10px 14px;
-    background-color: #F2F2F2;
-    border-radius: 6px;
-}
-
-.wis-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 180px;
-    height: 6px;
-    border-radius: 3px;
-    background: #ddd;
-    outline: none;
-}
-
-.wis-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #344D84;
-    cursor: pointer;
-}
-
-.width-label {
-    font-family: 'Just Another Hand', cursive;
-    font-size: 0.9rem;
-    color: #344D84;
-}
-
-.coverage-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Just Another Hand', cursive;
-    font-size: 0.95rem;
-    margin: 4px 0;
-}
-
-.coverage-check { font-size: 1.1rem; }
-.coverage-hit { color: #27ae60; }
-.coverage-miss { color: #c0392b; }
-
-.drag-hint {
-    font-size: 0.8rem;
-    color: #999;
-    font-style: italic;
-    margin-top: 6px;
-}
-
-/* --- WIS Scores --- */
-.wis-component {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 6px 0;
-    font-size: 0.85rem;
-}
-
-.wis-component .swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    flex-shrink: 0;
-}
-
-.wis-scores { margin-top: 15px; }
-
-.wis-score-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 8px 0;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.wis-score-row:last-child { border-bottom: none; }
-
-.wis-score-label {
-    font-size: 0.85rem;
-    color: #1C2442;
-}
-
-.wis-score-value {
-    font-family: 'Just Another Hand', cursive;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.rwis-highlight {
-    background: white;
-    border-radius: 6px;
-    padding: 12px;
-    margin-top: 12px;
-    text-align: center;
-}
-
-.rwis-label { font-size: 0.85rem; color: #2F4474; }
-
-.rwis-value {
-    font-family: 'Just Another Hand', cursive;
-    font-size: 2rem;
-    font-weight: 700;
-}
-
-.rwis-good { color: #27ae60; }
-.rwis-bad { color: #c0392b; }
-
-.rwis-interp {
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 4px;
-}
-
-#wis-decomp { margin-top: 12px; }
-
-/* --- Math Section --- */
-.math-details {
-    margin: 30px 0;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.math-details summary {
-    padding: 14px 20px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
-    color: #344D84;
-    cursor: pointer;
-    background: #F2F2F2;
-    list-style: none;
-}
-
-.math-details summary::-webkit-details-marker { display: none; }
-.math-details summary::before { content: '+ '; font-weight: 700; }
-.math-details[open] summary::before { content: '- '; }
-
-.math-body {
-    padding: 20px 24px;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-
-.math-body ul {
-    margin: 8px 0 8px 20px;
-}
-
-.math-body li {
-    margin: 4px 0;
-}
-
-.math-eq {
-    font-family: 'Just Another Hand', cursive;
-    font-size: 1.1rem;
-    background: #f8f8f8;
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin: 12px 0;
-    border-left: 3px solid #1E9CC5;
-    overflow-x: auto;
-}
-
-.math-label {
-    font-weight: 600;
-    color: #344D84;
-    margin-top: 16px;
-    display: block;
-}
-
-.citation {
-    margin-top: 20px;
-    padding: 12px 16px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    color: #555;
-}
-
-.citation a { color: #1E9CC5; }
-
-/* --- Responsive --- */
-@media (max-width: 900px) {
-    .content-wrapper {
-        grid-template-columns: 1fr;
-    }
-    .overview-outline {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 600px) {
-    .mobile-menu-btn { display: block; }
-    .sidebar-toggle { display: none; }
-
-    .app-layout { flex-direction: column; }
-
-    .sidebar {
-        position: fixed;
-        top: 0; left: 0; bottom: 0;
-        z-index: 100;
-        background: #fff;
-        box-shadow: 2px 0 12px rgba(0,0,0,0.1);
-        width: 0;
-    }
-    .sidebar.open {
-        width: 280px;
-        padding: 16px 0;
-    }
-    .sidebar.open .sidebar-inner {
-        width: 280px;
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    h1 { font-size: 1.4rem; }
-    .subtitle { font-size: 0.85rem; }
-    .section-heading { font-size: 1.2rem; }
-
-    .controls, .boxplot-controls {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-    }
-
-    .description-section { padding: 14px; }
-    .chart-container { padding: 12px; }
-}
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <!-- ============================================================
@@ -781,13 +50,13 @@ a.nav-item:hover {
                                 <span class="nav-subheading">a. Interval-based scoring</span>
                                 <ul>
                                     <li><a class="nav-item" data-section="section-wis">i. Weighted Interval Score</a></li>
-                                    <li><span class="nav-item disabled">ii. Coverage <span class="badge-soon">Soon</span></span></li>
+                                    <li><a class="nav-item" data-section="section-coverage">ii. Coverage</a></li>
                                 </ul>
                             </li>
                             <li>
                                 <span class="nav-subheading">b. Categorical scoring</span>
                                 <ul>
-                                    <li><span class="nav-item disabled">i. Brier Score <span class="badge-soon">Soon</span></span></li>
+                                    <li><a class="nav-item" data-section="section-brier">i. Brier Score</a></li>
                                     <li><span class="nav-item disabled">ii. Ranked Probability Score <span class="badge-soon">Soon</span></span></li>
                                 </ul>
                             </li>
@@ -826,9 +95,16 @@ a.nav-item:hover {
                         <p>How do we measure whether a forecast is any good?</p>
                         <ul>
                             <li><a data-section="section-wis">Weighted Interval Score</a> &mdash; Scoring prediction intervals</li>
-                            <li><span class="coming-soon-text">Coverage, Brier Score, RPS &mdash; Coming soon</span></li>
+                            <li><a data-section="section-coverage">Coverage</a> &mdash; Do observations land inside the intervals?</li>
+                            <li><a data-section="section-brier">Brier Score</a> &mdash; Scoring binary outcomes</li>
+                            <li><span class="coming-soon-text">Ranked Probability Score &mdash; Coming soon</span></li>
                         </ul>
                     </div>
+                </div>
+
+                <div class="section-paging">
+                    <span></span>
+                    <a class="page-btn page-btn-next" data-section="section-pi"><span class="page-label">Next</span><span class="page-title">Prediction Intervals &rarr;</span></a>
                 </div>
             </section>
 
@@ -861,14 +137,21 @@ a.nav-item:hover {
                         </div>
                     </div>
                 </div>
+
+                <div class="section-paging">
+                    <a class="page-btn page-btn-prev" data-section="section-overview"><span class="page-label">Previous</span><span class="page-title">&larr; Overview</span></a>
+                    <a class="page-btn page-btn-next" data-section="section-trends"><span class="page-label">Next</span><span class="page-title">Categorical Forecasts &rarr;</span></a>
+                </div>
             </section>
 
             <!-- ==================== Categorical Forecasts ==================== -->
             <section id="section-trends" class="content-section">
                 <h2 class="section-heading" style="margin-bottom:5px;">Categorical Forecasts</h2>
-                <p class="section-sub">Rather than predicting a specific value or interval, it can be just as useful to predict a <em>category</em>. For example, is disease activity high or low? Do we expect it to increase, decrease, or stay the same over the coming weeks?</p>
 
-                <div class="gauge-row" style="display:flex; gap:40px; justify-content:center; flex-wrap:wrap; margin:24px 0;">
+                <p class="section-sub">Rather than predicting a specific value or interval, sometimes it's more useful to predict the probability of an <em>outcome</em>. We often refer to these as <em>categorical forecasts</em>. These forecasts are often just as useful for public health decision-making because they provide a straight-forward picture of uncertainty and risk levels. Common examples include disease activity levels (e.g., how does current activity compare to previous seasons?) (right) and trend direction (do we expect cases to increase, decrease, or stay the same over the coming weeks?) (left).</p>
+
+
+                <div class="gauge-row" style="display:flex; gap:40px; justify-content:center; flex-wrap:wrap; margin:24px 0; position:relative;">
                     <div class="gauge-panel" style="text-align:center; flex:1; min-width:260px; max-width:400px;">
                         <h3 class="chart-title" style="margin-bottom:4px;">Rate Trend</h3>
                         <p style="font-size:0.82rem; color:#666; margin-bottom:8px;">Direction of change</p>
@@ -879,6 +162,7 @@ a.nav-item:hover {
                         <p style="font-size:0.82rem; color:#666; margin-bottom:8px;">Intensity of disease burden</p>
                         <div id="activity-gauge"></div>
                     </div>
+                    <span class="gauge-info-wrap" style="position:absolute; bottom:0; right:0;"><button class="gauge-info-btn" aria-label="How is the dial calculated?">i</button><span class="gauge-info-tip" style="right:0; left:auto; transform:none;">The dial position is a probability-weighted average across all categories. Each category is assigned an equal arc on the gauge, and the needle points to &Sigma; p<sub>i</sub> &middot; &theta;<sub>i</sub>, where p<sub>i</sub> is the forecast probability and &theta;<sub>i</sub> is the center angle of each segment.</span></span>
                 </div>
 
                 <div style="display:flex; gap:30px; flex-wrap:wrap; margin:20px 0;">
@@ -892,16 +176,39 @@ a.nav-item:hover {
                     </div>
                 </div>
 
-                <div class="example" style="margin-top:24px; max-width:800px; background:#f8f8f8; padding:20px; border-radius:6px;">
-                    <strong style="color:#344D84; display:block; margin-bottom:10px;">Why use categorical forecasts?</strong>
-                    <p style="font-size:0.9rem; line-height:1.5;">During periods of rapid epidemic change, exact count predictions are often unreliable. Categorical forecasts provide actionable information &mdash; "cases are likely increasing" &mdash; even when precise numbers are uncertain. They are evaluated using proper scoring rules like the <strong>Brier Score</strong> (for binary categories) or the <strong>Ranked Probability Score</strong> (for ordered categories like trend levels).</p>
+                <hr class="section-divider">
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <h3 class="section-heading" style="font-size:1.2rem; margin-bottom:10px;">Why use categorical forecasts?</h3>
+                        <p style="font-size:0.9rem; margin-bottom:12px;">During periods of rapid epidemic change, precise count predictions are often unreliable. A model might miss the exact number of hospitalizations by a wide margin, yet still correctly signal that activity is <strong>increasing</strong> or has reached a <strong>high</strong> level. Categorical forecasts capture this coarser but highly actionable information.</p>
+                        <p style="font-size:0.9rem; margin-bottom:12px;">For public health decision-makers, knowing <em>whether</em> activity is rising matters more than knowing the exact count. Categorical outputs map directly to response thresholds &mdash; staffing decisions, public messaging, and resource allocation &mdash; without requiring stakeholders to interpret numeric intervals.</p>
+                        <p style="font-size:0.9rem; margin-bottom:12px;">Categorical forecasts also remain informative when quantile forecasts break down, such as early in a season when data are sparse or when a novel pathogen makes historical baselines unreliable. Because they compress the prediction space into a few well-defined outcomes, they are more robust to model misspecification and easier to communicate to non-technical audiences.</p>
+                    </div>
+                    <div class="description-section">
+                        <h3>Evaluating Categorical Forecasts</h3>
+                        <p>How do we measure whether a categorical forecast is any good? We use <strong>proper scoring rules</strong> that reward both accuracy and well-calibrated probabilities:</p>
+                        <ul style="list-style:none; padding:0; margin-top:12px;">
+                            <li style="margin-bottom:10px;"><a data-section="section-brier" style="padding:6px 0; border:none; font-size:0.88rem; cursor:pointer;"><strong>Brier Score</strong> &mdash; scoring binary outcomes</a></li>
+                            <li><span class="nav-item disabled" style="padding:6px 0; border:none; font-size:0.88rem;"><strong>Ranked Probability Score</strong> &mdash; scoring ordered categories <span class="badge-soon">Coming soon</span></span></li>
+                        </ul>
+                    </div>
                 </div>
-                    <div class="citation" style="margin-top:16px;">
-                        Biggerstaff M, et al. (2024). Responding to the return of influenza in the United States. <em>JMIR Public Health and Surveillance</em> 10: e54340. <a href="https://doi.org/10.2196/54340" target="_blank" rel="noopener">doi:10.2196/54340</a>
-                    </div>
-                    <div class="citation" style="margin-top:8px;">
-                        CDC (2025). Framework for classifying disease trends applied to influenza-associated hospital admissions. <em>Open Forum Infectious Diseases</em> 12(8): ofaf460. <a href="https://doi.org/10.1093/ofid/ofaf460" target="_blank" rel="noopener">doi:10.1093/ofid/ofaf460</a>
-                    </div>
+
+                <div class="citation" style="margin-top:20px;">
+                    Biggerstaff M, et al. (2024). Responding to the return of influenza in the United States with improved epidemic forecasting. <em>JMIR Public Health and Surveillance</em>, 10, e54340. <a href="https://doi.org/10.2196/54340" target="_blank" rel="noopener">doi:10.2196/54340</a>
+                </div>
+                <div class="citation" style="margin-top:8px;">
+                    Mathis SM, et al. (2025). Framework for classifying disease trends applied to influenza-associated hospital admissions in the United States. <em>Open Forum Infectious Diseases</em>, 12(8), ofaf460. <a href="https://doi.org/10.1093/ofid/ofaf460" target="_blank" rel="noopener">doi:10.1093/ofid/ofaf460</a>
+                </div>
+                <div class="citation" style="margin-top:8px;">
+                    Gneiting T &amp; Raftery AE (2007). Strictly proper scoring rules, prediction, and estimation. <em>Journal of the American Statistical Association</em>, 102(477), 359&ndash;378. <a href="https://doi.org/10.1198/016214506000001437" target="_blank" rel="noopener">doi:10.1198/016214506000001437</a>
+                </div>
+
+                <div class="section-paging">
+                    <a class="page-btn page-btn-prev" data-section="section-pi"><span class="page-label">Previous</span><span class="page-title">&larr; Prediction Intervals</span></a>
+                    <a class="page-btn page-btn-next" data-section="section-wis"><span class="page-label">Next</span><span class="page-title">Weighted Interval Score &rarr;</span></a>
+                </div>
             </section>
 
             <!-- ==================== Weighted Interval Score ==================== -->
@@ -988,10 +295,11 @@ a.nav-item:hover {
 
                         <div class="wis-scores">
                             <div class="wis-score-row">
-                                <span class="wis-score-label">WIS (this date)</span>
+                                <span class="wis-score-label">WIS</span>
                                 <span class="wis-score-value" id="wis-model-val">&mdash;</span>
                             </div>
                         </div>
+                        <p style="font-size:0.78rem; color:#888; margin-top:10px;">* The scale of WIS depends on the magnitude of the forecast (see <em>The Math Behind WIS: Scale dependence and relative WIS</em>).</p>
                     </div>
                 </div>
 
@@ -1034,6 +342,10 @@ a.nav-item:hover {
 
                         <p><strong>Propriety.</strong> WIS is a <em>proper scoring rule</em>, meaning it is minimized in expectation when the forecaster reports their true belief about the future. This property incentivizes honest forecasting &mdash; a forecaster cannot systematically improve their score by misrepresenting their uncertainty.</p>
 
+                        <span class="math-label">Scale dependence and relative WIS:</span>
+                        <p>WIS is measured in the same units as the forecast target (e.g., hospitalizations). If a location has 10&times; more hospitalizations, both the interval widths and any miss penalties scale by roughly 10&times;, producing a WIS that is roughly 10&times; larger &mdash; even if the forecast is equally skillful.</p>
+                        <p>To normalize, we compute the <strong>relative WIS</strong> as a ratio against a baseline model, evaluated on the same targets.</p>
+
                         <div class="citation">
                             Bracher J, Ray EL, Gneiting T, Reich NG (2021). Evaluating epidemic forecasts in an interval format. <em>PLOS Computational Biology</em> 17(2): e1008618. <a href="https://doi.org/10.1371/journal.pcbi.1008618" target="_blank" rel="noopener">doi:10.1371/journal.pcbi.1008618</a>
                         </div>
@@ -1046,6 +358,9 @@ a.nav-item:hover {
                 <h2 class="section-heading" style="margin-bottom:5px;">Relative WIS &mdash; Comparing to a Baseline</h2>
                 <p class="section-sub">A score only has meaning in comparison. How does the model stack up against a simple baseline?</p>
 
+                <p style="font-size:0.9rem; margin-bottom:12px;">Because WIS is computed in the same units as the forecast target, its magnitude scales directly with the size of the numbers being predicted. A state like California, with thousands of weekly hospitalizations, will naturally produce wider prediction intervals &mdash; and therefore larger WIS values &mdash; than a state like Vermont with only a handful of cases. Comparing raw WIS across locations, or even across time periods with different baseline activity, tells you more about the <em>scale of the epidemic</em> than the <em>quality of the forecast</em>.</p>
+                <p style="font-size:0.9rem; margin-bottom:20px;">The solution is to divide each model's WIS by the WIS of a <strong>reference baseline</strong> model, producing a <strong>relative WIS (rWIS)</strong>. Because both the model and the baseline face the same forecasting difficulty at each location and time point, the ratio cancels out differences in scale &mdash; letting us ask: "Does this model add value beyond a simple, naive forecast?" regardless of whether we are forecasting 10 cases or 10,000.</p>
+
                 <div class="content-wrapper">
                     <div class="chart-section">
                         <div class="chart-container">
@@ -1056,13 +371,182 @@ a.nav-item:hover {
                     <div class="description-section">
                         <h3>The FluSight Baseline</h3>
                         <p>The <strong>FluSight baseline</strong> is a simple persistence model: it predicts the most recent observed value forward, using historical first differences to generate a prediction distribution.</p>
-                        <p style="margin-top:10px;">A raw WIS number is hard to interpret on its own. Is 500 good? Bad? It depends on the difficulty of the prediction task. <strong>Relative WIS</strong> solves this by comparing to a baseline:</p>
-                        <div class="math-eq" style="text-align:center; font-size:1.3rem;">
+                        <div class="math-eq" style="text-align:center; font-size:1.3rem; margin-top:12px;">
                             rWIS = WIS<sub>model</sub> / WIS<sub>baseline</sub>
                         </div>
                         <p><strong>rWIS &lt; 1</strong> means the model outperforms the baseline.<br>
                         <strong>rWIS &gt; 1</strong> means the baseline is better.</p>
                     </div>
+                </div>
+
+                <div class="section-paging">
+                    <a class="page-btn page-btn-prev" data-section="section-trends"><span class="page-label">Previous</span><span class="page-title">&larr; Categorical Forecasts</span></a>
+                    <a class="page-btn page-btn-next" data-section="section-coverage"><span class="page-label">Next</span><span class="page-title">Coverage &rarr;</span></a>
+                </div>
+            </section>
+
+            <!-- ==================== Coverage ==================== -->
+            <section id="section-coverage" class="content-section">
+                <h2 class="section-heading" style="margin-bottom:5px;">Coverage</h2>
+                <p class="section-sub">Does the observed value actually fall inside the prediction interval? Coverage measures how often it does.</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Forecast Intervals vs. Observed (Horizon 0) <span class="gauge-info-wrap"><button class="gauge-info-btn" aria-label="About this chart">i</button><span class="gauge-info-tip">If you make a one-week-ahead forecast every week during the season, you can evaluate your overall coverage by checking how often the observed value falls inside each prediction interval across all forecast dates.</span></span></h3>
+                            <div class="controls">
+                                <div class="control-group">
+                                    <label>PI:</label>
+                                    <button class="toggle-btn active" data-cov-interval="50">50%</button>
+                                    <button class="toggle-btn" data-cov-interval="80">80%</button>
+                                    <button class="toggle-btn" data-cov-interval="90">90%</button>
+                                    <button class="toggle-btn" data-cov-interval="95">95%</button>
+                                    <button class="toggle-btn" data-cov-interval="98">98%</button>
+                                </div>
+                                <div class="control-group">
+                                    <button class="toggle-btn" id="calc-coverage-btn" style="background:#1E9CC5; color:white; border-color:#1E9CC5;">Calculate Coverage</button>
+                                </div>
+                            </div>
+                            <div id="coverage-chart"></div>
+                            <div id="coverage-results" style="display:none; margin-top:16px;"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>What is Coverage?</h3>
+                        <p>For a single forecast, coverage is binary: the observation is either <strong>inside</strong> the prediction interval (coverage = 1) or <strong>outside</strong> (coverage = 0). There is no partial credit.</p>
+                        <p>To evaluate a model, we aggregate across many forecasts. If we compute 27 forecasts with an 80% PI, we count how many times the observation lands inside. If 22 out of 27 observations are covered, the <strong>empirical coverage</strong> is 22/27 &asymp; 81%.</p>
+                        <p class="definition" style="margin-top:12px;">A well-calibrated X% prediction interval should contain the observed value approximately X% of the time.</p>
+                        <p>Select a PI level and click <strong>Calculate Coverage</strong> to see which forecasts are covered.</p>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <h2 class="section-heading" style="font-size:1.2rem; margin-bottom:5px;">Coverage Across All Prediction Intervals</h2>
+                <p class="section-sub">How does empirical coverage compare to the nominal level across all PI widths?</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Coverage Curve</h3>
+                            <div id="coverage-curve-chart"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>Reading the Coverage Curve</h3>
+                        <p>The <strong>dashed diagonal</strong> represents perfect calibration: a 50% PI covers 50% of observations, a 90% PI covers 90%, and so on.</p>
+                        <p><strong>Above the diagonal</strong> &mdash; the model is <strong>underconfident</strong>. Its intervals are wider than necessary, capturing more observations than expected.</p>
+                        <p><strong>Below the diagonal</strong> &mdash; the model is <strong>overconfident</strong>. Its intervals are too narrow, missing observations more often than they should.</p>
+                        <p class="definition" style="margin-top:12px;">The closer the curve tracks the diagonal, the better calibrated the forecast is.</p>
+                    </div>
+                </div>
+
+                <div class="section-paging">
+                    <a class="page-btn page-btn-prev" data-section="section-wis"><span class="page-label">Previous</span><span class="page-title">&larr; Weighted Interval Score</span></a>
+                    <a class="page-btn page-btn-next" data-section="section-brier"><span class="page-label">Next</span><span class="page-title">Brier Score &rarr;</span></a>
+                </div>
+            </section>
+
+            <!-- ==================== Brier Score ==================== -->
+            <section id="section-brier" class="content-section">
+                <h2 class="section-heading" style="margin-bottom:5px;">Brier Score</h2>
+                <p class="section-sub">How do we score a categorical probability forecast against the observed outcome?</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Explore: Score a Single Forecast</h3>
+                            <p style="font-size:0.85rem; color:#666; margin-bottom:8px;">This is the same rate trend forecast from the Categorical Forecasts section. Select an observed outcome to see how it is scored.</p>
+                            <div class="controls">
+                                <div class="control-group" style="flex-wrap:wrap; gap:6px;">
+                                    <label>Observed:</label>
+                                    <button class="toggle-btn" data-brier-outcome="Large Increase">Large Increase</button>
+                                    <button class="toggle-btn active" data-brier-outcome="Increase">Increase</button>
+                                    <button class="toggle-btn" data-brier-outcome="Stable">Stable</button>
+                                    <button class="toggle-btn" data-brier-outcome="Decrease">Decrease</button>
+                                    <button class="toggle-btn" data-brier-outcome="Large Decrease">Large Decrease</button>
+                                </div>
+                            </div>
+                            <div id="brier-explorer"></div>
+                            <div id="brier-calc-display"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>What is the Brier Score?</h3>
+                        <p class="definition">
+                            The Brier Score measures the accuracy of a categorical probability forecast. It sums the squared differences between the forecast probabilities and the outcome indicator for each category:
+                        </p>
+                        <div class="math-eq" style="text-align:center; font-size:1.3rem; margin:12px 0;">
+                            BS = &sum;<sub>i=1</sub><sup>K</sup> (p<sub>i</sub> &minus; o<sub>i</sub>)&sup2;
+                        </div>
+                        <p>where <strong>p<sub>i</sub></strong> is the forecast probability for category <em>i</em>, and <strong>o<sub>i</sub></strong> = 1 for the observed category and 0 for all others.</p>
+                        <ul style="margin-top:10px; padding-left:18px; font-size:0.9rem;">
+                            <li><strong>BS = 0</strong> &mdash; perfect forecast (all probability on the correct category)</li>
+                            <li><strong>BS = 2</strong> &mdash; worst possible (all probability on one wrong category)</li>
+                        </ul>
+                        <p style="margin-top:12px;">The Brier Score is a <strong>proper scoring rule</strong> &mdash; a forecaster minimizes their expected score by reporting their true beliefs. The biggest penalty comes from not putting enough probability on the category that actually occurs.</p>
+                        <div class="example" style="margin-top:14px;">
+                            <strong>Try it:</strong> Select different observed outcomes on the left to see how the Brier Score changes. Notice that the score is lowest when the forecast placed the most probability on the correct category.
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- Season-Long Evaluation -->
+                <h2 class="section-heading" style="font-size:1.2rem; margin-bottom:5px;">Season-Long Evaluation</h2>
+                <p class="section-sub">Averaging the Brier Score across many forecasts to evaluate overall performance.</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Rate Trend Forecast &mdash; 12 Week Season</h3>
+                            <div id="brier-season-chart"></div>
+                            <div id="brier-season-results"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>Aggregating Brier Scores</h3>
+                        <p>For a single forecast, the Brier Score tells us how far the predicted probabilities were from the true outcome. But one forecast alone doesn&rsquo;t tell us much &mdash; we need to evaluate performance over many forecasts.</p>
+                        <p style="margin-top:10px;">The <strong>average Brier Score</strong> across a season summarizes overall model quality. Lower is better.</p>
+                        <p style="margin-top:10px;">We compare against a <strong>uniform baseline</strong> that always assigns equal probability (20%) to each of the five categories. For a uniform forecast, BS&nbsp;=&nbsp;0.80 regardless of the outcome. If the model&rsquo;s average BS is lower, it adds value beyond na&iuml;ve guessing.</p>
+                        <div class="example" style="margin-top:14px;">
+                            <strong>Reading the chart:</strong> Bar height shows the Brier Score for each week. <span style="color:#79CAC4; font-weight:600;">Teal</span> bars have BS&nbsp;&lt;&nbsp;0.50 (good forecasts), <span style="color:#E8A56D; font-weight:600;">tan</span> bars have BS&nbsp;&ge;&nbsp;0.50 (poor forecasts). Colored dots above each bar indicate the observed trend category for that week.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapsible math details -->
+                <details class="math-details">
+                    <summary>The Math Behind the Brier Score</summary>
+                    <div class="math-body">
+                        <span class="math-label">Multi-category Brier Score:</span>
+                        <div class="math-eq">
+                            BS = &sum;<sub>i=1</sub><sup>K</sup> (p<sub>i</sub> &minus; o<sub>i</sub>)&sup2;
+                        </div>
+                        <p>where K is the number of categories, p<sub>i</sub> &isin; [0, 1] is the forecast probability for category i (with &sum;p<sub>i</sub> = 1), and o<sub>i</sub> &isin; {0, 1} is the outcome indicator (1 for the observed category, 0 otherwise). The score ranges from 0 (perfect) to 2 (worst possible).</p>
+
+                        <p style="margin-top:12px;"><strong>Uniform baseline.</strong> A forecast that assigns equal probability 1/K to every category always produces BS = (1/K &minus; 1)&sup2; + (K&minus;1)(1/K)&sup2;. For K = 5 categories, this gives BS = 0.80 regardless of which category is observed.</p>
+
+                        <span class="math-label">Average Brier Score:</span>
+                        <div class="math-eq">
+                            BS&#x0305; = (1/N) &sum;<sub>t=1</sub><sup>N</sup> BS<sub>t</sub>
+                        </div>
+                        <p>The average across N forecasts summarizes overall calibration and accuracy.</p>
+
+                        <p style="margin-top:12px;"><strong>Connection to RPS.</strong> For <em>ordered</em> categorical outcomes, the <strong>Ranked Probability Score (RPS)</strong> extends the Brier Score by summing squared differences of <em>cumulative</em> probabilities. RPS respects the ordering of categories &mdash; predicting "Stable" when "Increase" occurs is penalized less than predicting "Large Decrease."</p>
+
+                        <p style="margin-top:12px;"><strong>Propriety.</strong> The Brier Score is a <em>strictly proper scoring rule</em>: a forecaster&rsquo;s expected score is uniquely minimized when they report their true subjective probabilities. Inflating or hedging probabilities systematically worsens the expected score.</p>
+
+                        <div class="citation" style="margin-top:16px;">
+                            Gneiting T &amp; Raftery AE (2007). Strictly proper scoring rules, prediction, and estimation. <em>Journal of the American Statistical Association</em>, 102(477), 359&ndash;378. <a href="https://doi.org/10.1198/016214506000001437" target="_blank" rel="noopener">doi:10.1198/016214506000001437</a>
+                        </div>
+                    </div>
+                </details>
+
+                <div class="section-paging">
+                    <a class="page-btn page-btn-prev" data-section="section-coverage"><span class="page-label">Previous</span><span class="page-title">&larr; Coverage</span></a>
+                    <span></span>
                 </div>
             </section>
 
@@ -1071,1134 +555,19 @@ a.nav-item:hover {
         </div><!-- #main-app -->
     </div><!-- .container -->
 
-    <script>
-/* ============================================================
-   JAVASCRIPT
-   ============================================================ */
-
-// --- Constants ---
-const FORECAST_URL = 'forecast.csv';
-const SURVEILLANCE_URL = 'target.csv';
-const BASELINE_URL = 'forecast_baseline.csv';
-
-const COLORS = {
-    observed: '#1C2442',
-    forecast: '#1E9CC5',
-    pi95: '#E8F6EF',
-    pi80: '#B9E1D9',
-    pi50: '#79CAC4',
-    baseline: '#999999'
-};
-
-const Z_SCORES = {
-    '0.01': -2.3263, '0.025': -1.9600, '0.05': -1.6449,
-    '0.1': -1.2816, '0.15': -1.0364, '0.2': -0.8416,
-    '0.25': -0.6745, '0.3': -0.5244, '0.35': -0.3853,
-    '0.4': -0.2533, '0.45': -0.1257, '0.5': 0,
-    '0.55': 0.1257, '0.6': 0.2533, '0.65': 0.3853,
-    '0.7': 0.5244, '0.75': 0.6745, '0.8': 0.8416,
-    '0.85': 1.0364, '0.9': 1.2816, '0.95': 1.6449,
-    '0.975': 1.9600, '0.99': 2.3263
-};
-
-const WIS_PAIRS = [
-    {alpha: 0.02, lower: '0.01',  upper: '0.99'},
-    {alpha: 0.05, lower: '0.025', upper: '0.975'},
-    {alpha: 0.10, lower: '0.05',  upper: '0.95'},
-    {alpha: 0.20, lower: '0.1',   upper: '0.9'},
-    {alpha: 0.30, lower: '0.15',  upper: '0.85'},
-    {alpha: 0.40, lower: '0.2',   upper: '0.8'},
-    {alpha: 0.50, lower: '0.25',  upper: '0.75'},
-    {alpha: 0.60, lower: '0.3',   upper: '0.7'},
-    {alpha: 0.70, lower: '0.35',  upper: '0.65'},
-    {alpha: 0.80, lower: '0.4',   upper: '0.6'},
-    {alpha: 0.90, lower: '0.45',  upper: '0.55'},
-];
-
-const PI_TO_PAIRS = {
-    95: [
-        {alpha: 0.02, lower: '0.01',  upper: '0.99'},
-        {alpha: 0.05, lower: '0.025', upper: '0.975'},
-        {alpha: 0.10, lower: '0.05',  upper: '0.95'},
-    ],
-    80: [
-        {alpha: 0.20, lower: '0.1',   upper: '0.9'},
-        {alpha: 0.30, lower: '0.15',  upper: '0.85'},
-        {alpha: 0.40, lower: '0.2',   upper: '0.8'},
-    ],
-    50: [
-        {alpha: 0.50, lower: '0.25',  upper: '0.75'},
-        {alpha: 0.60, lower: '0.3',   upper: '0.7'},
-        {alpha: 0.70, lower: '0.35',  upper: '0.65'},
-        {alpha: 0.80, lower: '0.4',   upper: '0.6'},
-        {alpha: 0.90, lower: '0.45',  upper: '0.55'},
-    ],
-};
-
-// Synthetic data for boxplot section
-const SYNTH_DATA = [
-    { date: new Date('2025-11-08'), observed: 1774, modelMedian: 1650, baselineMedian: 1348 },
-    { date: new Date('2025-11-15'), observed: 2417, modelMedian: 2500, baselineMedian: 1774 },
-    { date: new Date('2025-11-22'), observed: 3528, modelMedian: 3200, baselineMedian: 2417 },
-    { date: new Date('2025-11-29'), observed: 5133, modelMedian: 5400, baselineMedian: 3528 },
-    { date: new Date('2025-12-06'), observed: 7397, modelMedian: 7100, baselineMedian: 5133 },
-];
-
-let chartData = null;
-let bpObservedValue = null;
-
-// --- Scoring Functions ---
-function generateQuantiles(median, sigma) {
-    const q = {};
-    Object.entries(Z_SCORES).forEach(([level, z]) => {
-        q[level] = Math.max(0, median + z * sigma);
-    });
-    return q;
-}
-
-function computeWIS(allQ, y, pairs) {
-    pairs = pairs || WIS_PAIRS;
-    const median = allQ['0.5'];
-    const K = pairs.length;
-    let dispersion = 0, underpred = 0, overpred = 0;
-
-    pairs.forEach(({alpha, lower, upper}) => {
-        const l = allQ[lower], u = allQ[upper];
-        const w = alpha / 2;
-        dispersion += w * (u - l);
-        if (y > u) underpred += w * (2 / alpha) * (y - u);
-        if (y < l) overpred  += w * (2 / alpha) * (l - y);
-    });
-
-    const absErr = 0.5 * Math.abs(y - median);
-    const denom = K + 0.5;
-    return {
-        dispersion: dispersion / denom,
-        underprediction: underpred / denom,
-        overprediction: overpred / denom,
-        total: (dispersion + underpred + overpred + absErr) / denom
-    };
-}
-
-// Generate out-of-sample "observed" values (projected from surveillance trend)
-function getOOSValues(surveillance, forecastDates) {
-    const n = surveillance.length;
-    const lastVal = surveillance[n - 1].value;
-    const growthRate = lastVal / surveillance[n - 2].value;
-    const dampedRate = 1 + (growthRate - 1) * 0.6;
-    let prev = lastVal;
-    return forecastDates.map((d, i) => {
-        prev = prev * dampedRate;
-        const noise = Math.sin(i * 5.7 + 1.3) * prev * 0.04;
-        return { date: d.date, value: prev + noise };
-    });
-}
-
-// --- Data Loading ---
-async function loadData() {
-    try {
-        const [forecastRaw, surveillanceRaw, baselineRaw] = await Promise.all([
-            d3.csv(FORECAST_URL),
-            d3.csv(SURVEILLANCE_URL),
-            d3.csv(BASELINE_URL)
-        ]);
-
-        // Process forecast data
-        const forecastByDate = d3.group(forecastRaw, d => d.target_end_date);
-        const forecastData = Array.from(forecastByDate, ([date, rows]) => {
-            const q = {};
-            rows.forEach(r => {
-                if (r.output_type === 'quantile') q[r.output_type_id] = +r.value;
-            });
-            return {
-                date: new Date(date),
-                q025: q['0.025'], q100: q['0.1'], q250: q['0.25'],
-                q500: q['0.5'], q750: q['0.75'], q900: q['0.9'], q975: q['0.975'],
-                allQ: q
-            };
-        }).sort((a, b) => a.date - b.date);
-
-        // Process surveillance data
-        const byDate = d3.rollup(
-            surveillanceRaw,
-            v => d3.max(v, d => +d.observation || 0),
-            d => d.target_end_date
-        );
-        const surveillanceData = Array.from(byDate, ([date, value]) => ({
-            date: new Date(date),
-            value: value
-        })).sort((a, b) => a.date - b.date);
-
-        // Process baseline data
-        const baselineUS = baselineRaw.filter(r => r.location === 'US' && r.output_type === 'quantile' && r.horizon !== '-1');
-        const baselineByDate = d3.group(baselineUS, d => d.target_end_date);
-        const baselineData = Array.from(baselineByDate, ([date, rows]) => {
-            const q = {};
-            rows.forEach(r => { q[r.output_type_id] = +r.value; });
-            return {
-                date: new Date(date),
-                q025: q['0.025'], q100: q['0.1'], q250: q['0.25'],
-                q500: q['0.5'], q750: q['0.75'], q900: q['0.9'], q975: q['0.975'],
-                allQ: q
-            };
-        }).sort((a, b) => a.date - b.date);
-
-        chartData = { forecast: forecastData, surveillance: surveillanceData, baseline: baselineData };
-
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-
-        drawChart([95, 80, 50]);
-        setupControls();
-        setupNavigation();
-        bpObservedValue = SYNTH_DATA[2].observed;
-        setupBoxplotControls();
-        setupWISBoxControls();
-
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('error').style.display = 'block';
-        document.getElementById('error').textContent = `Error: ${error.message}`;
-    }
-}
-
-// --- Chart: PI ---
-function drawChart(enabledIntervals) {
-    const { forecast, surveillance } = chartData;
-
-    d3.select('#chart').selectAll('*').remove();
-
-    const margin = {top: 20, right: 30, bottom: 50, left: 70};
-    const container = document.getElementById('chart');
-    const width = container.clientWidth - margin.left - margin.right;
-    const height = 380 - margin.top - margin.bottom;
-
-    const svgEl = d3.select('#chart')
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
-
-    const svg = svgEl.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const rc = rough.svg(svgEl.node());
-
-    const allDates = [...surveillance.map(d => d.date), ...forecast.map(d => d.date)];
-    const allValues = [
-        ...surveillance.map(d => d.value),
-        ...forecast.flatMap(d => [d.q025, d.q975])
-    ];
-
-    const xScale = d3.scaleTime().domain(d3.extent(allDates)).range([0, width]);
-    const yScale = d3.scaleLinear().domain([0, d3.max(allValues) * 1.1]).range([height, 0]);
-
-    // Axes
-    svg.node().appendChild(rc.line(0, height, width, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 1 }));
-    svg.node().appendChild(rc.line(0, 0, 0, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 2 }));
-
-    xScale.ticks(6).forEach((tick, i) => {
-        const x = xScale(tick);
-        svg.node().appendChild(rc.line(x, height, x, height + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick).toUpperCase());
-    });
-
-    yScale.ticks(6).forEach((tick, i) => {
-        const y = yScale(tick);
-        svg.node().appendChild(rc.line(-6, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 20 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(d3.format(',')(tick));
-    });
-
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
-    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('WEEK');
-
-    // PI areas
-    const pis = [
-        {level: 95, lower: 'q025', upper: 'q975', color: COLORS.pi95, opacity: 0.3},
-        {level: 80, lower: 'q100', upper: 'q900', color: COLORS.pi80, opacity: 0.4},
-        {level: 50, lower: 'q250', upper: 'q750', color: COLORS.pi50, opacity: 0.5}
-    ];
-
-    pis.forEach(pi => {
-        if (!enabledIntervals.includes(pi.level)) return;
-        const area = d3.area().x(d => xScale(d.date)).y0(d => yScale(d[pi.lower])).y1(d => yScale(d[pi.upper]));
-        const sketchyPath = rc.path(area(forecast), {
-            fill: pi.color, fillStyle: 'solid', fillWeight: 1, stroke: 'none', roughness: 1.5, seed: pi.level
-        });
-        sketchyPath.style.opacity = pi.opacity;
-        svg.node().appendChild(sketchyPath);
-
-        // Bound lines
-        [pi.lower, pi.upper].forEach((key, j) => {
-            const line = d3.line().x(d => xScale(d.date)).y(d => yScale(d[key]));
-            svg.node().appendChild(rc.path(line(forecast), {
-                stroke: pi.color, strokeWidth: 1.5, roughness: 1.2, fill: 'none', seed: pi.level + j + 1
-            }));
-        });
-    });
-
-    // Median forecast line
-    const medianLine = d3.line().x(d => xScale(d.date)).y(d => yScale(d.q500));
-    svg.node().appendChild(rc.path(medianLine(forecast), {
-        stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 1.2, fill: 'none', seed: 42
-    }));
-
-    // Observed dots
-    surveillance.forEach(d => {
-        svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.value), 10, {
-            fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 1, roughness: 1, seed: Math.round(d.value)
-        }));
-    });
-
-    // Legend
-    const legend = svg.append('g').attr('transform', `translate(${width - 150}, 20)`);
-    legend.node().appendChild(rc.circle(15, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 1, seed: 99 }));
-    legend.append('text').attr('class', 'legend-text').attr('x', 25).attr('y', 4).text('OBSERVED');
-    legend.node().appendChild(rc.line(0, 20, 30, 20, { stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 1.2, seed: 100 }));
-    legend.append('text').attr('class', 'legend-text').attr('x', 35).attr('y', 24).text('FORECAST');
-}
-
-function setupControls() {
-    document.querySelectorAll('.toggle-btn[data-interval]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.classList.toggle('active');
-            const enabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-interval]'))
-                .map(b => parseInt(b.dataset.interval));
-            drawChart(enabled);
-        });
-    });
-}
-
-// --- Chart: WIS Box (Section 1) ---
-function drawBoxChart(enabledIntervals) {
-    const { forecast, surveillance } = chartData;
-
-    d3.select('#wis-box-chart').selectAll('*').remove();
-
-    const margin = {top: 20, right: 30, bottom: 50, left: 70};
-    const container = document.getElementById('wis-box-chart');
-    const width = container.clientWidth - margin.left - margin.right;
-    const height = 380 - margin.top - margin.bottom;
-
-    const svgEl = d3.select('#wis-box-chart')
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
-
-    const svg = svgEl.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const rc = rough.svg(svgEl.node());
-
-    const allDates = [...surveillance.map(d => d.date), ...forecast.map(d => d.date)];
-    const allValues = [
-        ...surveillance.map(d => d.value),
-        ...forecast.flatMap(d => [d.q025, d.q975])
-    ];
-
-    const xScale = d3.scaleTime().domain(d3.extent(allDates)).range([0, width]);
-    const yScale = d3.scaleLinear().domain([0, d3.max(allValues) * 1.1]).range([height, 0]);
-
-    // Axes
-    svg.node().appendChild(rc.line(0, height, width, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 1 }));
-    svg.node().appendChild(rc.line(0, 0, 0, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 2 }));
-
-    xScale.ticks(6).forEach((tick, i) => {
-        const x = xScale(tick);
-        svg.node().appendChild(rc.line(x, height, x, height + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick).toUpperCase());
-    });
-
-    yScale.ticks(6).forEach((tick, i) => {
-        const y = yScale(tick);
-        svg.node().appendChild(rc.line(-6, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 20 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(d3.format(',')(tick));
-    });
-
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
-    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('WEEK');
-
-    // Band half-width
-    const dateSpan = forecast.length > 1 ? xScale(forecast[1].date) - xScale(forecast[0].date) : 60;
-    const bandHW = Math.min(dateSpan * 0.35, 28);
-
-    // PI rectangles at each forecast date
-    const pis = [
-        {level: 95, lower: 'q025', upper: 'q975', color: COLORS.pi95, opacity: 0.6},
-        {level: 80, lower: 'q100', upper: 'q900', color: COLORS.pi80, opacity: 0.7},
-        {level: 50, lower: 'q250', upper: 'q750', color: COLORS.pi50, opacity: 0.8},
-    ];
-
-    pis.forEach(pi => {
-        if (!enabledIntervals.includes(pi.level)) return;
-        forecast.forEach((d, i) => {
-            const cx = xScale(d.date);
-            const top = yScale(d[pi.upper]);
-            const bot = yScale(d[pi.lower]);
-            const rect = rc.rectangle(cx - bandHW, top, bandHW * 2, bot - top, {
-                fill: pi.color, fillStyle: 'solid', stroke: pi.color, strokeWidth: 1, roughness: 1.2, seed: pi.level * 100 + i
-            });
-            rect.style.opacity = pi.opacity;
-            svg.node().appendChild(rect);
-        });
-    });
-
-    // Median blue line — horizontal segment within each box only
-    forecast.forEach((d, i) => {
-        const cx = xScale(d.date);
-        const my = yScale(d.q500);
-        svg.node().appendChild(rc.line(cx - bandHW, my, cx + bandHW, my, {
-            stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 0.8, seed: 42 + i
-        }));
-    });
-
-    // Out-of-sample dots (white fill, dark border) — noisy increasing trend
-    const oosData = getOOSValues(surveillance, forecast);
-    oosData.forEach((d, i) => {
-        svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.value), 10, {
-            fill: 'white', fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 2, roughness: 0.8, seed: 500 + i
-        }));
-    });
-
-    // Observed line + dots
-    const obsLine = d3.line().x(d => xScale(d.date)).y(d => yScale(d.value));
-    svg.node().appendChild(rc.path(obsLine(surveillance), {
-        stroke: COLORS.observed, strokeWidth: 2, roughness: 1, fill: 'none', seed: 550
-    }));
-    surveillance.forEach((d, i) => {
-        svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.value), 10, {
-            fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 1, roughness: 1, seed: 560 + i
-        }));
-    });
-
-    // Legend
-    const lg = svg.append('g').attr('transform', `translate(${width - 200}, 10)`);
-    lg.node().appendChild(rc.circle(8, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 0.8, seed: 570 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('OBSERVED');
-    lg.node().appendChild(rc.circle(8, 18, 8, { fill: 'white', fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 2, roughness: 0.8, seed: 571 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 22).text('OUT-OF-SAMPLE');
-    lg.node().appendChild(rc.line(0, 36, 16, 36, { stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 0.8, seed: 572 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 40).text('FORECAST MEDIAN');
-}
-
-function setupWISBoxControls() {
-    document.querySelectorAll('.toggle-btn[data-wis-box-interval]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.classList.toggle('active');
-            const enabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-wis-box-interval]'))
-                .map(b => parseInt(b.dataset.wisBoxInterval));
-            drawBoxChart(enabled);
-        });
-    });
-}
-
-// --- Chart: Boxplot (Section 2) ---
-function getBPEnabledPIs() {
-    return Array.from(document.querySelectorAll('.toggle-btn.active[data-bp-interval]'))
-        .map(b => parseInt(b.dataset.bpInterval));
-}
-
-function getBPWidth() {
-    return parseFloat(document.getElementById('bp-width-slider').value);
-}
-
-function redrawBoxplot() {
-    drawBoxplot(bpObservedValue, getBPWidth(), getBPEnabledPIs());
-}
-
-function renderObservedDot(svg, rc, xScale, obsVal, centerY, allQ, enabledPIs) {
-    svg.selectAll('.obs-group').remove();
-
-    const obsG = svg.select('.drag-overlay').empty()
-        ? svg.append('g').attr('class', 'obs-group')
-        : svg.insert('g', '.drag-overlay').attr('class', 'obs-group');
-
-    const obsX = xScale(obsVal);
-
-    obsG.node().appendChild(rc.line(obsX, centerY - 45, obsX, centerY + 45, {
-        stroke: COLORS.observed, strokeWidth: 1, roughness: 0.6, strokeLineDash: [4, 4], seed: 461
-    }));
-
-    obsG.node().appendChild(rc.circle(obsX, centerY, 14, {
-        fill: COLORS.observed, fillStyle: 'solid', stroke: '#fff', strokeWidth: 2, roughness: 1, seed: 460
-    }));
-
-    obsG.append('text').attr('class', 'tick-label')
-        .attr('x', obsX).attr('y', centerY - 50)
-        .attr('text-anchor', 'middle')
-        .style('font-weight', '700').style('font-size', '13px')
-        .text('OBSERVED: ' + d3.format(',')(Math.round(obsVal)));
-
-    updateBPCoverage(allQ, obsVal, enabledPIs);
-    const activePairs = enabledPIs.flatMap(level => PI_TO_PAIRS[level] || []);
-    const wis = computeWIS(allQ, obsVal, activePairs.length > 0 ? activePairs : WIS_PAIRS);
-    document.getElementById('wis-model-val').textContent = Math.round(wis.total).toLocaleString();
-    drawWISDecomp(wis);
-}
-
-function drawBoxplot(obsVal, widthFactor, enabledPIs) {
-    const d = SYNTH_DATA[2];
-    const sigma = d.observed * 0.12 * widthFactor;
-    const allQ = generateQuantiles(d.modelMedian, sigma);
-
-    d3.select('#boxplot').selectAll('*').remove();
-
-    const container = document.getElementById('boxplot');
-    const margin = {top: 30, right: 30, bottom: 40, left: 20};
-    const W = container.clientWidth - margin.left - margin.right;
-    const H = 130;
-
-    const svgEl = d3.select('#boxplot')
-        .append('svg')
-        .attr('width', W + margin.left + margin.right)
-        .attr('height', H + margin.top + margin.bottom);
-
-    const svg = svgEl.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const rc = rough.svg(svgEl.node());
-
-    const maxQ = d.modelMedian + 1.96 * d.observed * 0.12 * 3.0;
-    const minQ = Math.max(0, d.modelMedian - 1.96 * d.observed * 0.12 * 3.0);
-    const xScale = d3.scaleLinear().domain([minQ * 0.8, maxQ * 1.1]).range([0, W]);
-
-    // Axis
-    svg.node().appendChild(rc.line(0, H, W, H, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 300 }));
-
-    xScale.ticks(8).forEach((tick, i) => {
-        const x = xScale(tick);
-        svg.node().appendChild(rc.line(x, H, x, H + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 310 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', H + 20).attr('text-anchor', 'middle').text(d3.format(',')(tick));
-    });
-
-    svg.append('text').attr('class', 'axis-label').attr('x', W / 2).attr('y', H + 38).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
-
-    const piDefs = [
-        { level: 95, lower: '0.025', upper: '0.975', color: COLORS.pi95, barH: 60 },
-        { level: 80, lower: '0.1',   upper: '0.9',   color: COLORS.pi80, barH: 40 },
-        { level: 50, lower: '0.25',  upper: '0.75',  color: COLORS.pi50, barH: 22 },
-    ];
-
-    const centerY = H / 2;
-
-    // Draw PI bars (widest first)
-    piDefs.forEach((pi, i) => {
-        if (!enabledPIs.includes(pi.level)) return;
-        const x1 = xScale(allQ[pi.lower]);
-        const x2 = xScale(allQ[pi.upper]);
-        const y = centerY - pi.barH / 2;
-        svg.node().appendChild(rc.rectangle(x1, y, x2 - x1, pi.barH, {
-            fill: pi.color, fillStyle: 'solid', stroke: pi.color, strokeWidth: 1.5, roughness: 1.2, seed: 400 + i
-        }));
-        svg.append('text').attr('class', 'legend-text')
-            .attr('x', (x1 + x2) / 2).attr('y', centerY - pi.barH / 2 - 4)
-            .attr('text-anchor', 'middle').style('font-size', '11px')
-            .text(pi.level + '% PI')
-            .style('text-transform', 'uppercase');
-    });
-
-    // Median line — drawn AFTER PI bars so it renders on top
-    // Height covers full extent of largest enabled PI
-    const maxBarH = piDefs.filter(p => enabledPIs.includes(p.level)).reduce((m, p) => Math.max(m, p.barH), 30);
-    const medX = xScale(allQ['0.5']);
-    svg.node().appendChild(rc.line(medX, centerY - maxBarH / 2 - 5, medX, centerY + maxBarH / 2 + 5, {
-        stroke: COLORS.forecast, strokeWidth: 2.5, roughness: 0.8, seed: 450
-    }));
-
-    // Annotation
-    let annotation = '';
-    if (widthFactor < 0.5) annotation = 'TOO SHARP! OBSERVATIONS FALL OUTSIDE \u2014 LARGE PENALTY';
-    else if (widthFactor < 0.8) annotation = 'SHARPER INTERVALS, BUT SOME COVERAGE MISSES';
-    else if (widthFactor <= 1.3) annotation = 'GOOD BALANCE OF SHARPNESS AND CALIBRATION';
-    else if (widthFactor <= 2.0) annotation = 'WIDE INTERVALS \u2014 HIGH DISPERSION PENALTY';
-    else annotation = 'VERY WIDE \u2014 SAFE COVERAGE BUT POOR SHARPNESS';
-
-    svg.append('text').attr('class', 'tick-label')
-        .attr('x', W / 2).attr('y', -8)
-        .attr('text-anchor', 'middle')
-        .style('fill', '#666').style('font-size', '13px')
-        .text(annotation);
-
-    // Observed dot
-    renderObservedDot(svg, rc, xScale, obsVal, centerY, allQ, enabledPIs);
-
-    // Drag overlay
-    svg.append('rect')
-        .attr('class', 'drag-overlay')
-        .attr('x', 0).attr('y', 0)
-        .attr('width', W).attr('height', H)
-        .attr('fill', 'transparent')
-        .style('cursor', 'ew-resize')
-        .call(d3.drag()
-            .on('drag', function(event) {
-                const newVal = xScale.invert(Math.max(0, Math.min(W, event.x)));
-                bpObservedValue = newVal;
-                renderObservedDot(svg, rc, xScale, newVal, centerY, allQ, enabledPIs);
-            })
-        );
-}
-
-function updateBPCoverage(allQ, obsVal, enabledPIs) {
-    const el = document.getElementById('bp-coverage');
-    el.innerHTML = '';
-    const piChecks = [
-        { level: 95, lower: '0.025', upper: '0.975' },
-        { level: 80, lower: '0.1',   upper: '0.9'   },
-        { level: 50, lower: '0.25',  upper: '0.75'  },
-    ];
-    piChecks.forEach(pi => {
-        if (!enabledPIs.includes(pi.level)) return;
-        const inRange = obsVal >= allQ[pi.lower] && obsVal <= allQ[pi.upper];
-        const row = document.createElement('div');
-        row.className = 'coverage-row';
-        row.innerHTML = `<span class="coverage-check ${inRange ? 'coverage-hit' : 'coverage-miss'}">${inRange ? '&#10003;' : '&#10007;'}</span>
-            <span>${pi.level}% PI: ${inRange ? 'Covered' : 'Miss'} [${d3.format(',')(Math.round(allQ[pi.lower]))} \u2013 ${d3.format(',')(Math.round(allQ[pi.upper]))}]</span>`;
-        el.appendChild(row);
-    });
-}
-
-function setupBoxplotControls() {
-    document.querySelectorAll('.toggle-btn[data-bp-interval]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.classList.toggle('active');
-            redrawBoxplot();
-        });
-    });
-
-    const slider = document.getElementById('bp-width-slider');
-    const label = document.getElementById('bp-width-value');
-    slider.addEventListener('input', () => {
-        label.textContent = parseFloat(slider.value).toFixed(1) + 'x';
-        redrawBoxplot();
-    });
-}
-
-// --- WIS Decomposition Bar ---
-function drawWISDecomp(wis) {
-    const el = d3.select('#wis-decomp');
-    el.selectAll('*').remove();
-
-    const total = wis.total;
-    if (total === 0) return;
-
-    const barW = 260, barH = 26;
-    const svgBar = el.append('svg').attr('width', barW + 10).attr('height', barH + 28);
-    const rc = rough.svg(svgBar.node());
-
-    const parts = [
-        { label: 'Dispersion', value: wis.dispersion, color: '#5ACDC5' },
-        { label: 'Under', value: wis.underprediction, color: '#E87D5F' },
-        { label: 'Over', value: wis.overprediction, color: '#8B6DB0' },
-    ];
-
-    let x = 0;
-    parts.forEach((p, i) => {
-        const w = (p.value / total) * barW;
-        if (w > 1) {
-            svgBar.node().appendChild(rc.rectangle(x, 0, w, barH, {
-                fill: p.color, fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 1000 + i
-            }));
-            if (w > 40) {
-                svgBar.append('text').attr('x', x + w / 2).attr('y', barH / 2 + 5)
-                    .attr('text-anchor', 'middle').attr('class', 'tick-label')
-                    .style('fill', 'white').style('font-size', '11px')
-                    .text(Math.round(p.value));
-            }
-            x += w;
-        }
-    });
-
-    x = 0;
-    parts.forEach(p => {
-        const w = (p.value / total) * barW;
-        if (w > 30) {
-            svgBar.append('text').attr('x', x + w / 2).attr('y', barH + 16)
-                .attr('text-anchor', 'middle')
-                .style('font-size', '10px').style('fill', '#1C2442')
-                .style('font-family', "'Just Another Hand', cursive")
-                .text(p.label.toUpperCase());
-        }
-        x += w;
-    });
-}
-
-// --- Chart: rWIS (Section 4) ---
-function drawRWISChart() {
-    const { forecast, surveillance, baseline } = chartData;
-
-    d3.select('#rwis-chart').selectAll('*').remove();
-
-    const margin = {top: 20, right: 30, bottom: 50, left: 70};
-    const container = document.getElementById('rwis-chart');
-    const width = container.clientWidth - margin.left - margin.right;
-    const height = 380 - margin.top - margin.bottom;
-
-    const svgEl = d3.select('#rwis-chart')
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
-
-    const svg = svgEl.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const rc = rough.svg(svgEl.node());
-
-    const allDates = [...surveillance.map(d => d.date), ...forecast.map(d => d.date), ...baseline.map(d => d.date)];
-    const allValues = [
-        ...surveillance.map(d => d.value),
-        ...forecast.flatMap(d => [d.q100, d.q900]),
-        ...baseline.map(d => d.q900)
-    ];
-
-    const xScale = d3.scaleTime().domain(d3.extent(allDates)).range([0, width]);
-    const yScale = d3.scaleLinear().domain([0, d3.max(allValues) * 1.1]).range([height, 0]);
-
-    // Axes
-    svg.node().appendChild(rc.line(0, height, width, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 1 }));
-    svg.node().appendChild(rc.line(0, 0, 0, height, { stroke: '#1C2442', strokeWidth: 1.5, roughness: 0.8, seed: 2 }));
-
-    xScale.ticks(6).forEach((tick, i) => {
-        const x = xScale(tick);
-        svg.node().appendChild(rc.line(x, height, x, height + 6, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 10 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', x).attr('y', height + 20).attr('text-anchor', 'middle').text(d3.timeFormat('%b %d')(tick).toUpperCase());
-    });
-
-    yScale.ticks(6).forEach((tick, i) => {
-        const y = yScale(tick);
-        svg.node().appendChild(rc.line(-6, y, 0, y, { stroke: '#1C2442', strokeWidth: 1, roughness: 0.5, seed: 20 + i }));
-        svg.append('text').attr('class', 'tick-label').attr('x', -10).attr('y', y + 4).attr('text-anchor', 'end').text(d3.format(',')(tick));
-    });
-
-    svg.append('text').attr('class', 'axis-label').attr('transform', 'rotate(-90)').attr('y', -55).attr('x', -height / 2).attr('text-anchor', 'middle').text('WEEKLY HOSPITALIZATIONS');
-    svg.append('text').attr('class', 'axis-label').attr('x', width / 2).attr('y', height + 42).attr('text-anchor', 'middle').text('WEEK');
-
-    // Band half-width
-    const dateSpan = forecast.length > 1 ? xScale(forecast[1].date) - xScale(forecast[0].date) : 60;
-    const bandHW = Math.min(dateSpan * 0.22, 22);
-    const gap = 3;
-
-    // --- Draw BASELINE first (behind) ---
-    // Baseline 80% PI boxes (right side, gray hachure)
-    baseline.forEach((d, i) => {
-        const cx = xScale(d.date) + gap / 2;
-        const upper = d.q900;
-        const lower = Math.max(d.q100, d.q500 * 0.3);
-        const top = yScale(upper);
-        const bot = yScale(lower);
-        svg.node().appendChild(rc.rectangle(cx, top, bandHW * 2, bot - top, {
-            fill: COLORS.baseline, fillStyle: 'hachure',
-            fillWeight: 1.5, hachureGap: 5,
-            stroke: COLORS.baseline, strokeWidth: 1,
-            roughness: 1.2, seed: 2200 + i
-        }));
-    });
-
-    // Baseline 50% PI boxes (right side, gray hachure)
-    baseline.forEach((d, i) => {
-        const cx = xScale(d.date) + gap / 2;
-        const top = yScale(d.q750);
-        const bot = yScale(d.q250);
-        svg.node().appendChild(rc.rectangle(cx + bandHW * 0.3, top, bandHW * 1.4, bot - top, {
-            fill: COLORS.baseline, fillStyle: 'hachure',
-            fillWeight: 2, hachureGap: 4,
-            stroke: COLORS.baseline, strokeWidth: 1,
-            roughness: 1.2, seed: 2300 + i
-        }));
-    });
-
-    // --- Draw MODEL on top ---
-    // Model 80% PI boxes (left side)
-    forecast.forEach((d, i) => {
-        const cx = xScale(d.date) - gap / 2 - bandHW;
-        const top = yScale(d.q900);
-        const bot = yScale(d.q100);
-        const rect = rc.rectangle(cx, top, bandHW * 2, bot - top, {
-            fill: COLORS.pi95, fillStyle: 'solid',
-            stroke: COLORS.pi80, strokeWidth: 1,
-            roughness: 1.2, seed: 2000 + i
-        });
-        rect.style.opacity = 0.6;
-        svg.node().appendChild(rect);
-    });
-
-    // Model 50% PI boxes (left side)
-    forecast.forEach((d, i) => {
-        const cx = xScale(d.date) - gap / 2 - bandHW;
-        const top = yScale(d.q750);
-        const bot = yScale(d.q250);
-        const rect = rc.rectangle(cx + bandHW * 0.3, top, bandHW * 1.4, bot - top, {
-            fill: COLORS.pi50, fillStyle: 'solid',
-            stroke: COLORS.pi50, strokeWidth: 1,
-            roughness: 1.2, seed: 2100 + i
-        });
-        rect.style.opacity = 0.8;
-        svg.node().appendChild(rect);
-    });
-
-    // Out-of-sample dots (noisy increasing trend)
-    const oosData = getOOSValues(surveillance, forecast);
-    oosData.forEach((d, i) => {
-        svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.value), 10, {
-            fill: 'white', fillStyle: 'solid',
-            stroke: COLORS.observed, strokeWidth: 2,
-            roughness: 0.8, seed: 2400 + i
-        }));
-    });
-
-    // Baseline median dots (gray)
-    baseline.forEach((d, i) => {
-        svg.node().appendChild(rc.circle(xScale(d.date) + gap / 2 + bandHW, yScale(d.q500), 8, {
-            fill: COLORS.baseline, fillStyle: 'solid',
-            stroke: COLORS.baseline, strokeWidth: 1,
-            roughness: 0.8, seed: 2500 + i
-        }));
-    });
-
-    // Observed line + dots
-    const obsLine = d3.line().x(d => xScale(d.date)).y(d => yScale(d.value));
-    svg.node().appendChild(rc.path(obsLine(surveillance), {
-        stroke: COLORS.observed, strokeWidth: 2, roughness: 1, fill: 'none', seed: 2600
-    }));
-    surveillance.forEach((d, i) => {
-        svg.node().appendChild(rc.circle(xScale(d.date), yScale(d.value), 10, {
-            fill: COLORS.observed, fillStyle: 'solid',
-            stroke: COLORS.observed, strokeWidth: 1,
-            roughness: 1, seed: 2610 + i
-        }));
-    });
-
-    // Legend
-    const lg = svg.append('g').attr('transform', `translate(${width - 200}, 10)`);
-    lg.node().appendChild(rc.circle(8, 0, 8, { fill: COLORS.observed, fillStyle: 'solid', stroke: COLORS.observed, roughness: 0.8, seed: 2700 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 4).text('OBSERVED');
-    lg.node().appendChild(rc.circle(8, 16, 8, { fill: 'white', fillStyle: 'solid', stroke: COLORS.observed, strokeWidth: 2, roughness: 0.8, seed: 2703 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 18).attr('y', 20).text('OUT-OF-SAMPLE');
-    lg.node().appendChild(rc.rectangle(0, 28, 16, 10, { fill: COLORS.pi80, fillStyle: 'solid', stroke: 'none', roughness: 0.8, seed: 2701 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 38).text('MODEL');
-    lg.node().appendChild(rc.rectangle(0, 44, 16, 10, { fill: COLORS.baseline, fillStyle: 'hachure', fillWeight: 1.5, hachureGap: 4, stroke: COLORS.baseline, roughness: 0.8, seed: 2702 }));
-    lg.append('text').attr('class', 'legend-text').attr('x', 22).attr('y', 54).text('BASELINE');
-
-    // --- Compute real WIS ---
-    const baselineByDateMap = {};
-    baseline.forEach(d => { baselineByDateMap[d.date.toISOString().slice(0, 10)] = d; });
-
-    const survByDate = {};
-    surveillance.forEach(d => { survByDate[d.date.toISOString().slice(0, 10)] = d.value; });
-
-    let modelWISSum = 0, baselineWISSum = 0, matchCount = 0;
-
-    forecast.forEach(fd => {
-        const dateKey = fd.date.toISOString().slice(0, 10);
-        const obs = survByDate[dateKey];
-        const bd = baselineByDateMap[dateKey];
-        if (obs !== undefined && bd) {
-            modelWISSum += computeWIS(fd.allQ, obs).total;
-            baselineWISSum += computeWIS(bd.allQ, obs).total;
-            matchCount++;
-        }
-    });
-
-    if (matchCount > 0) {
-        const avgModel = modelWISSum / matchCount;
-        const avgBaseline = baselineWISSum / matchCount;
-        const rWIS = avgBaseline > 0 ? avgModel / avgBaseline : NaN;
-
-        document.getElementById('wis-avg-model-val').textContent = Math.round(avgModel).toLocaleString();
-        document.getElementById('wis-baseline-val').textContent = Math.round(avgBaseline).toLocaleString();
-
-        const rwisEl = document.getElementById('rwis-val');
-        rwisEl.textContent = rWIS.toFixed(2);
-        rwisEl.className = 'rwis-value ' + (rWIS < 1 ? 'rwis-good' : 'rwis-bad');
-
-        const interpEl = document.getElementById('rwis-interp');
-        if (rWIS < 1) interpEl.textContent = `Model is ${Math.round((1 - rWIS) * 100)}% better than the baseline`;
-        else if (rWIS > 1) interpEl.textContent = `Model is ${Math.round((rWIS - 1) * 100)}% worse than the baseline`;
-        else interpEl.textContent = 'Model performs the same as baseline';
-    } else {
-        document.getElementById('wis-avg-model-val').textContent = 'N/A';
-        document.getElementById('wis-baseline-val').textContent = 'N/A';
-        document.getElementById('rwis-val').textContent = 'N/A';
-        document.getElementById('rwis-interp').textContent = 'No overlapping dates between forecast, baseline, and observations';
-    }
-}
-
-// --- Charts: Categorical Forecasts (Trend + Activity horizontal bars) ---
-function drawHorizontalBarChart(containerId, categories, probs, colors, seedBase) {
-    d3.select('#' + containerId).selectAll('*').remove();
-
-    const container = document.getElementById(containerId);
-    const margin = {top: 8, right: 60, bottom: 10, left: 120};
-    const width = container.clientWidth - margin.left - margin.right;
-    const barHeight = 32;
-    const gap = 10;
-    const height = categories.length * (barHeight + gap) - gap;
-
-    const svgEl = d3.select('#' + containerId)
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
-
-    const svg = svgEl.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const rc = rough.svg(svgEl.node());
-
-    const xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
-
-    categories.forEach((cat, i) => {
-        const y = i * (barHeight + gap);
-        const prob = probs[cat];
-        const barW = xScale(prob);
-
-        // Bar
-        if (barW > 2) {
-            svg.node().appendChild(rc.rectangle(0, y, barW, barHeight, {
-                fill: colors[cat], fillStyle: 'solid',
-                stroke: colors[cat], strokeWidth: 0.5,
-                roughness: 1.2, seed: seedBase + i
-            }));
-        }
-
-        // Category label (left)
-        svg.append('text').attr('class', 'tick-label')
-            .attr('x', -8).attr('y', y + barHeight / 2 + 4)
-            .attr('text-anchor', 'end')
-            .style('font-size', '15px')
-            .text(cat.toUpperCase());
-
-        // Percentage label (right of bar)
-        svg.append('text').attr('class', 'tick-label')
-            .attr('x', barW + 8).attr('y', y + barHeight / 2 + 4)
-            .style('font-size', '15px').style('font-weight', '600')
-            .text(Math.round(prob * 100) + '%');
-    });
-}
-
-function drawTrendChart() {
-    const categories = ['Large Increase', 'Increase', 'Stable', 'Decrease', 'Large Decrease'];
-    const probs = { 'Large Increase': 0.08, 'Increase': 0.52, 'Stable': 0.28, 'Decrease': 0.09, 'Large Decrease': 0.03 };
-    const colors = {
-        'Large Increase': '#E8A56D', 'Increase': '#EFDA86', 'Stable': '#D1E5B7',
-        'Decrease': '#9CD3B4', 'Large Decrease': '#75BFBD'
-    };
-    drawHorizontalBarChart('trend-chart', categories, probs, colors, 4000);
-}
-
-function drawActivityChart() {
-    const categories = ['Very High', 'High', 'Medium', 'Low'];
-    const probs = { 'Very High': 0.05, 'High': 0.35, 'Medium': 0.45, 'Low': 0.15 };
-    const colors = {
-        'Very High': '#4D6891', 'High': '#4B9AC1', 'Medium': '#9CD8D3', 'Low': '#E4F7EE'
-    };
-    drawHorizontalBarChart('activity-chart', categories, probs, colors, 4100);
-}
-
-// --- Charts: Gauge/Dial Visualizations ---
-function drawGauge(containerId, categories, probs, colors, seedBase) {
-    d3.select('#' + containerId).selectAll('*').remove();
-
-    const container = document.getElementById(containerId);
-    const totalW = Math.min(container.clientWidth, 360);
-    const cx = totalW / 2;
-    const cy = totalW * 0.48;
-    const outerR = totalW * 0.38;
-    const innerR = outerR * 0.55;
-    const svgH = totalW * 0.62;
-
-    const svgEl = d3.select('#' + containerId)
-        .append('svg')
-        .attr('width', totalW)
-        .attr('height', svgH);
-
-    const rc = rough.svg(svgEl.node());
-
-    // Draw arc segments — from π (left) to 0 (right)
-    let startAngle = Math.PI;
-    const totalProb = categories.reduce((s, c) => s + probs[c], 0);
-
-    // Find the most likely category for the needle
-    let maxProb = 0, maxCat = categories[0];
-    categories.forEach(c => { if (probs[c] > maxProb) { maxProb = probs[c]; maxCat = c; } });
-
-    // Compute needle angle (weighted average)
-    let needleAngle = 0;
-    let cumAngle = Math.PI;
-    const segAngles = [];
-    categories.forEach(c => {
-        const sweep = (probs[c] / totalProb) * Math.PI;
-        const midAngle = cumAngle - sweep / 2;
-        segAngles.push({ cat: c, start: cumAngle, end: cumAngle - sweep, mid: midAngle });
-        needleAngle += probs[c] * midAngle;
-        cumAngle -= sweep;
-    });
-    needleAngle /= totalProb;
-
-    // Draw each arc segment
-    segAngles.forEach((seg, i) => {
-        const steps = 20;
-        const sweepAngle = seg.start - seg.end;
-        let pathD = '';
-
-        // Outer arc
-        for (let s = 0; s <= steps; s++) {
-            const a = seg.start - (s / steps) * sweepAngle;
-            const x = cx + outerR * Math.cos(a);
-            const y = cy - outerR * Math.sin(a);
-            pathD += (s === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
-        }
-        // Inner arc (reverse)
-        for (let s = steps; s >= 0; s--) {
-            const a = seg.start - (s / steps) * sweepAngle;
-            const x = cx + innerR * Math.cos(a);
-            const y = cy - innerR * Math.sin(a);
-            pathD += 'L' + x.toFixed(1) + ',' + y.toFixed(1);
-        }
-        pathD += 'Z';
-
-        svgEl.node().appendChild(rc.path(pathD, {
-            fill: colors[seg.cat], fillStyle: 'solid',
-            stroke: '#fff', strokeWidth: 2,
-            roughness: 1.0, seed: seedBase + i
-        }));
-
-        // Category label on outer edge
-        const labelR = outerR + 14;
-        const labelAngle = seg.mid;
-        const lx = cx + labelR * Math.cos(labelAngle);
-        const ly = cy - labelR * Math.sin(labelAngle);
-        const anchor = labelAngle > Math.PI / 2 ? 'end' : labelAngle < Math.PI / 2 ? 'start' : 'middle';
-        svgEl.append('text')
-            .attr('x', lx).attr('y', ly + 4)
-            .attr('text-anchor', anchor)
-            .style('font-family', "'Just Another Hand', cursive")
-            .style('font-size', '14px')
-            .style('fill', '#1C2442')
-            .text(seg.cat.toUpperCase());
-    });
-
-    // Draw needle
-    const needleLen = outerR * 0.92;
-    const nx = cx + needleLen * Math.cos(needleAngle);
-    const ny = cy - needleLen * Math.sin(needleAngle);
-    svgEl.node().appendChild(rc.line(cx, cy, nx, ny, {
-        stroke: '#1C2442', strokeWidth: 2.5, roughness: 0.6, seed: seedBase + 50
-    }));
-    // Needle hub
-    svgEl.node().appendChild(rc.circle(cx, cy, 12, {
-        fill: '#1C2442', fillStyle: 'solid',
-        stroke: '#1C2442', strokeWidth: 1,
-        roughness: 0.8, seed: seedBase + 51
-    }));
-
-    // Text below: predicted category + probability
-    svgEl.append('text')
-        .attr('x', cx).attr('y', cy + 20)
-        .attr('text-anchor', 'middle')
-        .style('font-family', "'DM Sans', sans-serif")
-        .style('font-size', '16px')
-        .style('font-weight', '700')
-        .style('fill', colors[maxCat])
-        .text(maxCat.toUpperCase());
-
-    svgEl.append('text')
-        .attr('x', cx).attr('y', cy + 38)
-        .attr('text-anchor', 'middle')
-        .style('font-family', "'Just Another Hand', cursive")
-        .style('font-size', '18px')
-        .style('fill', '#666')
-        .text((Math.round(maxProb * 100) + '% PROBABILITY'));
-}
-
-function drawTrendGauge() {
-    const categories = ['Large Decrease', 'Decrease', 'Stable', 'Increase', 'Large Increase'];
-    const probs = { 'Large Increase': 0.08, 'Increase': 0.52, 'Stable': 0.28, 'Decrease': 0.09, 'Large Decrease': 0.03 };
-    const colors = {
-        'Large Increase': '#E8A56D', 'Increase': '#EFDA86', 'Stable': '#D1E5B7',
-        'Decrease': '#9CD3B4', 'Large Decrease': '#75BFBD'
-    };
-    drawGauge('trend-gauge', categories, probs, colors, 5000);
-}
-
-function drawActivityGauge() {
-    const categories = ['Low', 'Medium', 'High', 'Very High'];
-    const probs = { 'Very High': 0.05, 'High': 0.35, 'Medium': 0.45, 'Low': 0.15 };
-    const colors = {
-        'Very High': '#4D6891', 'High': '#4B9AC1', 'Medium': '#9CD8D3', 'Low': '#E4F7EE'
-    };
-    drawGauge('activity-gauge', categories, probs, colors, 5100);
-}
-
-// --- Navigation & Controls ---
-function setupNavigation() {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.getElementById('sidebar-toggle');
-    const mobileBtn = document.getElementById('mobile-menu-btn');
-
-    // Sidebar toggle button
-    toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        toggle.classList.toggle('closed');
-        // Redraw current charts after layout shift
-        setTimeout(redrawActiveSection, 250);
-    });
-
-    // Mobile hamburger
-    mobileBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-    });
-
-    // Section switching — handle clicks on any element with data-section
-    document.addEventListener('click', (e) => {
-        const target = e.target.closest('[data-section]');
-        if (!target || target.classList.contains('disabled')) return;
-
-        const sectionId = target.dataset.section;
-        const sectionEl = document.getElementById(sectionId);
-        if (!sectionEl) return;
-
-        // Switch content panels
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        sectionEl.classList.add('active');
-
-        // Update nav active state
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.querySelectorAll(`.nav-item[data-section="${sectionId}"]`).forEach(n => n.classList.add('active'));
-
-        // Close sidebar on mobile after selection
-        if (window.innerWidth <= 600) {
-            sidebar.classList.remove('open');
-        }
-
-        // Redraw charts for the activated section
-        setTimeout(() => redrawActiveSection(sectionId), 50);
-    });
-}
-
-function redrawActiveSection(sectionId) {
-    if (!sectionId) {
-        const active = document.querySelector('.content-section.active');
-        sectionId = active ? active.id : null;
-    }
-    if (sectionId === 'section-pi') {
-        const piEnabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-interval]'))
-            .map(b => parseInt(b.dataset.interval));
-        drawChart(piEnabled);
-    } else if (sectionId === 'section-trends') {
-        drawTrendGauge();
-        drawActivityGauge();
-        drawTrendChart();
-        drawActivityChart();
-    } else if (sectionId === 'section-wis') {
-        const wisEnabled = Array.from(document.querySelectorAll('.toggle-btn.active[data-wis-box-interval]'))
-            .map(b => parseInt(b.dataset.wisBoxInterval));
-        drawBoxChart(wisEnabled);
-        redrawBoxplot();
-        drawRWISChart();
-    }
-}
-
-// --- Init ---
-loadData();
-    </script>
+    <!-- External libraries -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
+
+    <!-- App modules (load order matters) -->
+    <script src="js/constants.js"></script>
+    <script src="js/scoring.js"></script>
+    <script src="js/pi-chart.js"></script>
+    <script src="js/wis-charts.js"></script>
+    <script src="js/categorical-charts.js"></script>
+    <script src="js/coverage-charts.js"></script>
+    <script src="js/brier-score.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
