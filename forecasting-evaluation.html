@@ -41,6 +41,7 @@
                         <ul>
                             <li><a class="nav-item" data-section="section-pi">a. Prediction Intervals</a></li>
                             <li><a class="nav-item" data-section="section-trends">b. Categorical Forecasts</a></li>
+                            <li><a class="nav-item" data-section="section-binned">c. Binned Distributions</a></li>
                         </ul>
                     </li>
                     <li>
@@ -58,6 +59,12 @@
                                 <ul>
                                     <li><a class="nav-item" data-section="section-brier">i. Brier Score</a></li>
                                     <li><span class="nav-item disabled">ii. Ranked Probability Score <span class="badge-soon">Soon</span></span></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class="nav-subheading">c. Distribution-based scoring</span>
+                                <ul>
+                                    <li><a class="nav-item" data-section="section-log-score">i. Log Score</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -88,6 +95,7 @@
                         <ul>
                             <li><a data-section="section-pi">Prediction Intervals</a> &mdash; Ranges where we expect future values to fall</li>
                             <li><a data-section="section-trends">Categorical Forecasts</a> &mdash; Trends, activity levels, and other categorical predictions</li>
+                            <li><a data-section="section-binned">Binned Distributions</a> &mdash; Discretizing forecasts into probability bins</li>
                         </ul>
                     </div>
                     <div class="outline-card">
@@ -97,6 +105,7 @@
                             <li><a data-section="section-wis">Weighted Interval Score</a> &mdash; Scoring prediction intervals</li>
                             <li><a data-section="section-coverage">Coverage</a> &mdash; Do observations land inside the intervals?</li>
                             <li><a data-section="section-brier">Brier Score</a> &mdash; Scoring categorical forecasts</li>
+                            <li><a data-section="section-log-score">Log Score</a> &mdash; Scoring binned distribution forecasts</li>
                             <li><span class="coming-soon-text">Ranked Probability Score &mdash; Coming soon</span></li>
                         </ul>
                     </div>
@@ -207,6 +216,71 @@
 
                 <div class="section-paging">
                     <a class="page-btn page-btn-prev" data-section="section-pi"><span class="page-label">Previous</span><span class="page-title">&larr; Prediction Intervals</span></a>
+                    <a class="page-btn page-btn-next" data-section="section-binned"><span class="page-label">Next</span><span class="page-title">Binned Distributions &rarr;</span></a>
+                </div>
+            </section>
+
+            <!-- ==================== Binned Distributions ==================== -->
+            <section id="section-binned" class="content-section">
+                <h2 class="section-heading" style="margin-bottom:5px;">Binned Distributions</h2>
+                <p class="section-sub">Discretizing a continuous forecast into probability bins &mdash; and why the bin width matters.</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Explore: Binning a Forecast Distribution</h3>
+                            <p style="font-size:0.85rem; color:#666; margin-bottom:8px;">A forecast for weekly hospitalizations, N(500, 80). Adjust the bin width to see how it changes the histogram.</p>
+                            <div class="boxplot-controls">
+                                <div class="control-group">
+                                    <label>Bin width:</label>
+                                    <span class="width-label">Narrow</span>
+                                    <input type="range" class="wis-slider" id="binned-width-slider" min="10" max="200" step="5" value="50">
+                                    <span class="width-label">Wide</span>
+                                    <span class="width-label" id="binned-width-value" style="font-weight:700;">50</span>
+                                </div>
+                            </div>
+                            <div id="binned-explorer"></div>
+                            <div id="binned-info-display" style="margin-top:8px; font-size:0.88rem; color:#555;"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>What are Binned Distributions?</h3>
+                        <p class="definition">
+                            A binned distribution discretizes a continuous forecast into non-overlapping intervals (bins), each assigned a probability mass representing how likely the observed value is to fall in that range.
+                        </p>
+                        <p style="margin-top:10px;">For each bin [a, b), the probability is:</p>
+                        <div class="math-eq" style="text-align:center; font-size:1.1rem; margin:8px 0;">
+                            P(bin) = CDF(b) &minus; CDF(a)
+                        </div>
+                        <p>All bin probabilities sum to 1, forming a proper probability mass function (PMF).</p>
+                        <p style="margin-top:12px;"><strong>Why bin?</strong> Binned distributions are a standard reporting format for epidemic forecasts. They convert a continuous predictive distribution into a finite set of categories that are easy to communicate, store, and score.</p>
+                        <div class="example" style="margin-top:14px;">
+                            <strong>Try it:</strong> Drag the bin width slider. Narrow bins give a fine-grained shape that closely traces the smooth curve. Wide bins produce a coarse, blocky histogram that loses detail.
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <h2 class="section-heading" style="font-size:1.2rem; margin-bottom:5px;">Why Bin Width Matters</h2>
+                <p class="section-sub">The same forecast at three different bin widths.</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <div id="binned-comparison"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>The Resolution Tradeoff</h3>
+                        <p><strong>Narrow bins</strong> (left) give fine resolution &mdash; the histogram closely approximates the underlying probability density. But each bin captures only a small slice of probability.</p>
+                        <p style="margin-top:10px;"><strong>Wide bins</strong> (right) are coarser &mdash; the shape is blocky and you lose detail about where exactly the peak is. But each bin captures more probability mass.</p>
+                        <p style="margin-top:10px;">The &ldquo;right&rdquo; bin width depends on the use case. For scoring, it has a direct effect: the <a data-section="section-log-score" style="cursor:pointer; text-decoration:underline;">Log Score</a> illustrates this tradeoff directly.</p>
+                    </div>
+                </div>
+
+                <div class="section-paging">
+                    <a class="page-btn page-btn-prev" data-section="section-trends"><span class="page-label">Previous</span><span class="page-title">&larr; Categorical Forecasts</span></a>
                     <a class="page-btn page-btn-next" data-section="section-wis"><span class="page-label">Next</span><span class="page-title">Weighted Interval Score &rarr;</span></a>
                 </div>
             </section>
@@ -380,7 +454,7 @@
                 </div>
 
                 <div class="section-paging">
-                    <a class="page-btn page-btn-prev" data-section="section-trends"><span class="page-label">Previous</span><span class="page-title">&larr; Categorical Forecasts</span></a>
+                    <a class="page-btn page-btn-prev" data-section="section-binned"><span class="page-label">Previous</span><span class="page-title">&larr; Binned Distributions</span></a>
                     <a class="page-btn page-btn-next" data-section="section-coverage"><span class="page-label">Next</span><span class="page-title">Coverage &rarr;</span></a>
                 </div>
             </section>
@@ -546,6 +620,128 @@
 
                 <div class="section-paging">
                     <a class="page-btn page-btn-prev" data-section="section-coverage"><span class="page-label">Previous</span><span class="page-title">&larr; Coverage</span></a>
+                    <a class="page-btn page-btn-next" data-section="section-log-score"><span class="page-label">Next</span><span class="page-title">Log Score &rarr;</span></a>
+                </div>
+            </section>
+
+            <!-- ==================== Log Score ==================== -->
+            <section id="section-log-score" class="content-section">
+                <h2 class="section-heading" style="margin-bottom:5px;">Log Score</h2>
+                <p class="section-sub">How do we score a binned probability forecast? The log score rewards putting probability mass where the observation lands.</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Explore: Score a Binned Forecast</h3>
+                            <p style="font-size:0.85rem; color:#666; margin-bottom:8px;">The same N(500, 80) forecast, binned and scored. Drag the observed value or change the bin width.</p>
+                            <div class="boxplot-controls">
+                                <div class="control-group">
+                                    <label>Bin width:</label>
+                                    <span class="width-label">Narrow</span>
+                                    <input type="range" class="wis-slider" id="log-score-bw-slider" min="10" max="200" step="5" value="50">
+                                    <span class="width-label">Wide</span>
+                                    <span class="width-label" id="log-score-bw-value" style="font-weight:700;">50</span>
+                                </div>
+                            </div>
+                            <div id="log-score-explorer"></div>
+                            <p class="drag-hint">Drag the observed value (dark dot) left or right to see how the score changes.</p>
+                            <div id="log-score-calc-display"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>What is the Log Score?</h3>
+                        <p class="definition">
+                            The log score evaluates a binned forecast by measuring how much probability mass was assigned to the bin containing the observed value:
+                        </p>
+                        <div class="math-eq" style="text-align:center; font-size:1.3rem; margin:12px 0;">
+                            LS = &minus;log<sub>2</sub>(p<sub>k</sub>)
+                        </div>
+                        <p>where <strong>p<sub>k</sub></strong> is the probability assigned to the bin that contains the observation.</p>
+                        <ul style="margin-top:10px; padding-left:18px; font-size:0.9rem;">
+                            <li><strong>LS = 0</strong> &mdash; perfect (all probability mass in the correct bin)</li>
+                            <li><strong>LS &rarr; &infin;</strong> &mdash; worst (nearly zero mass on the correct bin)</li>
+                        </ul>
+                        <p style="margin-top:12px;">The log score is a <strong>proper scoring rule</strong> &mdash; a forecaster minimizes their expected score by reporting their true beliefs. It heavily penalizes assigning very low probability to the outcome that actually occurs.</p>
+                        <div class="example" style="margin-top:14px;">
+                            <strong>Try it:</strong> Drag the observed value into the tails &mdash; the score increases dramatically. Change the bin width to see how it affects the probability and therefore the score.
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- Bin Width Effect -->
+                <h2 class="section-heading" style="font-size:1.2rem; margin-bottom:5px;">Bin Width Effect on Log Score</h2>
+                <p class="section-sub">How does the choice of bin width change the score for the same forecast and observation?</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Log Score vs. Bin Width</h3>
+                            <div id="log-score-bw-effect"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>The Resolution&ndash;Score Tradeoff</h3>
+                        <p><strong>Wider bins</strong> capture more probability mass &rarr; p<sub>k</sub> is larger &rarr; the log score is lower (better). But the forecast is less informative.</p>
+                        <p style="margin-top:10px;"><strong>Narrower bins</strong> give each bin less mass &rarr; p<sub>k</sub> is smaller &rarr; the log score is higher (worse), even for a good forecast.</p>
+                        <p class="definition" style="margin-top:12px;">This means log scores computed with different bin widths are <strong>not directly comparable</strong>. When comparing models, always use the same binning scheme.</p>
+                        <p style="margin-top:10px;">As bin width &rarr; 0, the log score approaches &minus;log&thinsp;f(y)&thinsp;+&thinsp;log(&Delta;), where f(y) is the continuous density and &Delta; is the bin width. The constant log(&Delta;) offset cancels when comparing models.</p>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- Season-Long Evaluation -->
+                <h2 class="section-heading" style="font-size:1.2rem; margin-bottom:5px;">Season-Long Evaluation</h2>
+                <p class="section-sub">Averaging the log score across a season of forecasts.</p>
+
+                <div class="content-wrapper">
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Weekly Log Scores &mdash; 12 Week Season</h3>
+                            <div id="log-score-season-chart"></div>
+                            <div id="log-score-season-results"></div>
+                        </div>
+                    </div>
+                    <div class="description-section">
+                        <h3>Aggregating Log Scores</h3>
+                        <p>The <strong>average log score</strong> across a season summarizes overall forecast quality. Lower is better.</p>
+                        <p style="margin-top:10px;">We compare against a <strong>uniform baseline</strong> that assigns equal probability to every bin. For a uniform forecast, LS = log<sub>2</sub>(N) where N is the number of bins. If the model&rsquo;s average LS is lower, it adds value beyond na&iuml;ve guessing.</p>
+                        <p style="margin-top:10px;">Each week&rsquo;s forecast is a normal distribution with different mean and spread, reflecting a realistic scenario where forecast uncertainty changes as the season progresses. The bin width slider above also updates these scores.</p>
+                        <div class="example" style="margin-top:14px;">
+                            <strong>Reading the chart:</strong> <span style="color:#79CAC4; font-weight:600;">Teal</span> bars indicate weeks where the model scored well (below 60% of baseline). <span style="color:#E8A56D; font-weight:600;">Tan</span> bars indicate weeks with poorer scores. The dashed line marks the uniform baseline.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapsible math details -->
+                <details class="math-details">
+                    <summary>The Math Behind the Log Score</summary>
+                    <div class="math-body">
+                        <span class="math-label">Log Score for a binned forecast:</span>
+                        <div class="math-eq">
+                            LS = &minus;log<sub>2</sub>(p<sub>k</sub>)
+                        </div>
+                        <p>where p<sub>k</sub> is the probability mass assigned to the bin [a<sub>k</sub>, b<sub>k</sub>) that contains the observed value y. The bin probability is computed from the forecast CDF: p<sub>k</sub> = F(b<sub>k</sub>) &minus; F(a<sub>k</sub>).</p>
+
+                        <p style="margin-top:12px;"><strong>Continuous limit.</strong> As bin width &Delta; &rarr; 0, p<sub>k</sub> &asymp; f(y) &middot; &Delta;, so LS &asymp; &minus;log<sub>2</sub> f(y) &minus; log<sub>2</sub>(&Delta;). The &minus;log<sub>2</sub>(&Delta;) term is constant across models using the same bins, so model comparisons remain valid. The &minus;log<sub>2</sub> f(y) term is the continuous log score (ignorance score).</p>
+
+                        <span class="math-label">Average Log Score:</span>
+                        <div class="math-eq">
+                            LS&#x0305; = (1/N) &sum;<sub>t=1</sub><sup>N</sup> LS<sub>t</sub>
+                        </div>
+
+                        <p style="margin-top:12px;"><strong>Propriety.</strong> The log score is a <em>strictly proper scoring rule</em>: a forecaster&rsquo;s expected score is uniquely minimized when reporting their true predictive distribution. It is the only proper scoring rule that is <em>local</em> &mdash; it depends only on the probability assigned to the event that actually occurred.</p>
+
+                        <div class="citation" style="margin-top:16px;">
+                            Gneiting T &amp; Raftery AE (2007). Strictly proper scoring rules, prediction, and estimation. <em>Journal of the American Statistical Association</em>, 102(477), 359&ndash;378. <a href="https://doi.org/10.1198/016214506000001437" target="_blank" rel="noopener">doi:10.1198/016214506000001437</a>
+                        </div>
+                    </div>
+                </details>
+
+                <div class="section-paging">
+                    <a class="page-btn page-btn-prev" data-section="section-brier"><span class="page-label">Previous</span><span class="page-title">&larr; Brier Score</span></a>
                     <span></span>
                 </div>
             </section>
@@ -567,6 +763,8 @@
     <script src="js/categorical-charts.js"></script>
     <script src="js/coverage-charts.js"></script>
     <script src="js/brier-score.js"></script>
+    <script src="js/binned-distribution.js"></script>
+    <script src="js/log-score.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/app.js"></script>
 </body>

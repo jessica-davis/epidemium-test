@@ -94,6 +94,8 @@ async function loadData() {
         setupWISBoxControls();
         setupCoverageControls();
         setupBrierControls();
+        setupBinnedControls();
+        setupLogScoreControls();
 
     } catch (error) {
         console.error('Error:', error);

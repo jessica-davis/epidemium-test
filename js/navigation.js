@@ -80,5 +80,12 @@ function redrawActiveSection(sectionId) {
     } else if (sectionId === 'section-brier') {
         drawBrierExplorer();
         drawSeasonBrierChart();
+    } else if (sectionId === 'section-binned') {
+        drawBinnedExplorer();
+        drawBinnedComparison();
+    } else if (sectionId === 'section-log-score') {
+        drawLogScoreExplorer();
+        drawBinWidthEffect();
+        drawSeasonLogScoreChart();
     }
 }

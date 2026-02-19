@@ -48,6 +48,25 @@ function getOOSValues(surveillance, forecastDates) {
     });
 }
 
+// --- Normal distribution helpers ---
+function erf(x) {
+    const sign = x >= 0 ? 1 : -1;
+    x = Math.abs(x);
+    const t = 1 / (1 + 0.3275911 * x);
+    const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+    return sign * y;
+}
+
+function normalPDF(x, mu, sigma) {
+    const z = (x - mu) / sigma;
+    return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+}
+
+function normalCDF(x, mu, sigma) {
+    const z = (x - mu) / (sigma * Math.SQRT2);
+    return 0.5 * (1 + erf(z));
+}
+
 function computeCoverageStats(forecastH0, obsByDate, piDef) {
     let covered = 0, total = 0;
     forecastH0.forEach(d => {
